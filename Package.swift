@@ -23,9 +23,14 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "YiTVLinkSDK",
-            dependencies: []),
+            dependencies: [],
+            swiftSettings: [.define("TEST", .when(configuration: .debug))]
+        ),
         .testTarget(
             name: "YiTVLinkSDKTests",
             dependencies: ["YiTVLinkSDK"]),
+        
+                
+            
     ]
 )
