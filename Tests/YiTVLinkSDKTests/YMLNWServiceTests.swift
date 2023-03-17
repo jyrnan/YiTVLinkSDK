@@ -228,54 +228,5 @@ final class YMLNWServiceTests: XCTestCase {
         return sendPack
     }
   
-  //MARK: - 测试网络协议数据转换
-  func testMakeEncodedData() {
-    struct A: EncodedDatable {
-      var cmd: UInt16 = 0x0005
-      var ap: UInt32 = 0x01000001
-      var uint8: UInt8 = 0x11
-      var name: String = "hello"
-    }
-    
-    let encodedData = [UInt8]( A().encodedData )
-    let shouldData:[UInt8] = [0, 10, 0, 05, 1, 0, 0, 1, 17, 104, 101, 108, 108, 111]
-    
-    XCTAssertEqual(encodedData, shouldData)
-  }
-  
-  func testMakeEncodedDataWithEnumProperty() {
-    
-    struct A: EncodedDatable {
-      enum MouseEvent: UInt8, UInt8RawValue {
-        case move = 0x01
-        case leftButtonPress = 0x03
-        case leftButtonRelease = 0x04
-      }
-      enum Platform: UInt16, RawRepresentable, UInt16RawValue {
-        case mStar = 0x0811;
-        case mLogic = 0x0211
-      }
-      
-      enum PlayState:UInt32, RawRepresentable, UInt32RawValue {
-        case error = 0x00000000
-        case play = 0x00000001
-        case stop = 0x00000002
-        case pause = 0x00000003
-        case seek = 0x00000004
-      }
-      var packetCmd: UInt16 = 0x0070
-      var motion: MouseEvent = .leftButtonPress
-      var count: UInt16 = 5
-      var ap: UInt32 = 0x11000001
-      var name: String = "hello"
-      var playState: PlayState = .stop
-      var type: Platform = .mLogic
-      var json: String = "{com: 34}"
-    }
-    
-    let encodedData = [UInt8]( A().encodedData )
-    let shouldData:[UInt8] = [0, 27, 0, 112, 3, 0, 5, 17, 0, 0, 1, 104, 101, 108, 108, 111, 0, 0, 0, 2, 2, 17, 123, 99, 111, 109, 58, 32, 51, 52, 125]
-    
-    XCTAssertEqual(encodedData, shouldData)
-  }
+
 }

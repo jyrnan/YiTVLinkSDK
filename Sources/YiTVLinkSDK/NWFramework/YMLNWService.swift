@@ -48,12 +48,12 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     
     private func setupUdpListener() {
         // 单元测试时避免搜寻设备时候server端upd端口和client监听端口一致😮‍💨
-        #if TEST
-        let port = YMLNetwork.DEV_DISCOVERY_UDP_PORT + 1
-      print("THIS IS TEST")
-        #else
-        let port = YMLNetwork.DEV_DISCOVERY_UDP_PORT
-        #endif
+//        #if TEST
+//        let port = YMLNetwork.DEV_DISCOVERY_UDP_LISTEN_PORT + 1
+//      print("THIS IS TEST")
+//        #else
+        let port = YMLNetwork.DEV_DISCOVERY_UDP_LISTEN_PORT
+//        #endif
         
         let listener = YMLNWListener.init(on: port, delegate: self, type: .udp)
         self.udpListener = listener
@@ -190,11 +190,13 @@ extension YMLNWService {
     /// - Parameter device: 发出搜寻包的设备信息
     /// - Returns:带有搜寻设备名称信息的广播包数据
     func makeSearchDeviceSendPack(with device: DeviceInfo? = nil) -> Data {
-        let discoveryRequest = DiscoveryInfo(device: device ?? DeviceInfo(), TcpPort: 0, UdpPort: 0)
-        discoveryRequest.encodeData = "Discovery"
-      
-        let sendPack = try! JSONEncoder().encode(discoveryRequest)
-        return sendPack
+//        let discoveryRequest = DiscoveryInfo(device: device ?? DeviceInfo(), TcpPort: 0, UdpPort: 0)
+//        discoveryRequest.encodeData = "Discovery"
+//
+//        let sendPack = try! JSONEncoder().encode(discoveryRequest)
+//        return sendPack
+      let deviceDiscoveryData = DeviceDiscoverPacket(dev_name: "My iPhone").encodedData
+      return deviceDiscoveryData
     }
 
     /// 处理发送设备搜寻广播后收到的UDP数据

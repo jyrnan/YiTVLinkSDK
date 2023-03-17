@@ -22,8 +22,11 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     }
 
 
-    // 通过广播进行设备发现的UDP接收端口
-    static let DEV_DISCOVERY_UDP_PORT: UInt16 = 10691
+    // 兼容9.0协议端口通过广播进行设备发现的UDP接收端口
+    static let DEV_DISCOVERY_UDP_PORT: UInt16 = 8000
+    static let DEV_TCP_PORT: UInt16 = 8001
+    static let DEV_DISCOVERY_UDP_LISTEN_PORT: UInt16 = 8009
+  
     
     typealias SuccessHandler = (Data) -> Void
     typealias FailureHandler = (Error?) -> Void
