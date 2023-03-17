@@ -29,7 +29,7 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
         
     }
     
-    func displayAdvertizeError(_ error: NWError) {
+    func displayAdvertiseError(_ error: NWError) {
         
     }
     
@@ -42,9 +42,9 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
     var udpClient: YiTVLinkSDK.YMLNWConnection?
     lazy var searchUdpClient: YMLNWConnection! = YMLNWConnection(endpoint: NWEndpoint.hostPort(host: .init("127.0.0.1"),
                                                                                               port: .init(rawValue:8889)!),
-                                                                delegat: self)
+                                                                delegate: self)
     lazy var udpListener: YMLNWListener! = .init(on: 6044, delegate: self)
-    var lisener: YiTVLinkSDK.YMLListener?
+    var listener: YiTVLinkSDK.YMLListener?
     
     var discoveredDevice: [YiTVLinkSDK.DiscoveryInfo] = []
     var hasConnectedToDevice: YiTVLinkSDK.DeviceInfo?
@@ -52,29 +52,29 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
     func initSDK(key: String) {}
     
     func searchDeviceInfo(searchListener: YiTVLinkSDK.YMLListener) {
-        lisener = searchListener
+        listener = searchListener
         guard discoveredDevice.isEmpty else { return }
         let devices = [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample]
         discoveredDevice = devices.map { DiscoveryInfo(device: $0, TcpPort: 0, UdpPort: 0) }
-        lisener?.deliver(devices: [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample])
+        listener?.deliver(devices: [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample])
     }
     
     func createTcpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
-        lisener?.notified(with: "TCPCONNECTED")
+        listener?.notified(with: "TCPCONNECTED")
         return true
     }
     
     func sendTcpData(data: Data) {
-        lisener?.notified(with: "Data sent: \(data)")
+        listener?.notified(with: "Data sent: \(data)")
     }
     
     func receiveTcpData(TCPListener: YiTVLinkSDK.YMLListener) {
-        lisener = TCPListener
+        listener = TCPListener
     }
     
     func closeTcpChannel() {
         tcpClient = nil
-        lisener?.notified(with: "TCPDISCONNECTED")
+        listener?.notified(with: "TCPDISCONNECTED")
     }
     
     func createUdpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
@@ -82,13 +82,13 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
     }
     
     func sendGeneralCommand(command: RemoteControl) -> Bool {
-        lisener?.notified(with: "Genneral command sent: \(command)")
+        listener?.notified(with: "Genneral command sent: \(command)")
         return true
     }
     
     func modifyDeviceName(name: String) {}
     
     private func echo(data: Data) {
-        lisener?.deliver(data: data)
+        listener?.deliver(data: data)
     }
 }

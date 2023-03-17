@@ -68,13 +68,13 @@ class YMLNWProtocol: NWProtocolFramerImplementation {
             // 到这里应该已经构建了header，从而可以获得后续数据的类型和长度信息
             var messageType: YMLNWMessageType = .invalid
             // 利用header中的type信息来构造消息类型
-            if let parsedMessagetype = YMLNWMessageType(rawValue: header.type) {
-                messageType = parsedMessagetype
+            if let parsedMessageType = YMLNWMessageType(rawValue: header.type) {
+                messageType = parsedMessageType
             }
             // 利用messageType来构建message
             let message = NWProtocolFramer.Message(YMLNWMessageType: messageType)
             
-            // 发送header中的长度的数据，并将messeage传递
+            // 发送header中的长度的数据，并将message传递
             //message会在上一层次的方法中封装到context的 metadata中传递给应用层
             if !framer.deliverInputNoCopy(length: Int(header.length), message: message, isComplete: true) {
                 return 0

@@ -131,7 +131,7 @@ class YMLNWListener {
         case .setup:
             break
         case .waiting(let error):
-            self.delegate?.displayAdvertizeError(error)
+            self.delegate?.displayAdvertiseError(error)
         case .ready:
             print("Listener ready on \(String(describing: self.listener?.port))")
             self.delegate?.ListenerReady()
@@ -142,7 +142,7 @@ class YMLNWListener {
 //                self.setupNoSSLListener()
 //            } else {
             print("Listener failed with \(error), stopping")
-            self.delegate?.displayAdvertizeError(error)
+            self.delegate?.displayAdvertiseError(error)
             self.delegate?.ListenerFailed()
             self.stopListening()
 //            }
@@ -171,7 +171,7 @@ class YMLNWListener {
     }
 }
 
-// 因为PeerListern需要管理部分传入的Connection所以需要把自身设置成这些connection的代理
+// 因为PeerListener需要管理部分传入的Connection所以需要把自身设置成这些connection的代理
 extension YMLNWListener: YMLNWConnectionDelegate {
     func connectionReady(connection: YMLNWConnection) {
         self.delegate?.connectionReady(connection: connection)
@@ -186,8 +186,8 @@ extension YMLNWListener: YMLNWConnectionDelegate {
         self.delegate?.receivedMessage(content: content, connection: connection)
     }
     
-    func displayAdvertizeError(_ error: NWError) {
-        self.delegate?.displayAdvertizeError(error)
+    func displayAdvertiseError(_ error: NWError) {
+        self.delegate?.displayAdvertiseError(error)
     }
     
     func connectionError(connection: YMLNWConnection, error: NWError) {

@@ -19,7 +19,7 @@ protocol YMLNWServiceProtocol: YMLNetworkProtocol {
     var udpListener: YMLNWListener! { get set }
     
     /// 监听设备，一般是应用调用者，提供各种回调
-    var lisener: YMLListener? { get set }
+    var listener: YMLListener? { get set }
     
     /// 搜索到当前局域网内可以连接的设备信息
     var discoveredDevice: [DiscoveryInfo] { get set }

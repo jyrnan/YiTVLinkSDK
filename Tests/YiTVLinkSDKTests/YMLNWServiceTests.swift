@@ -68,7 +68,7 @@ final class YMLNWServiceTests: XCTestCase {
         XCTAssertEqual(service.serviceKey, "TestClientName")
     }
     
-    /// 目前测试会失败，因为客户udpListener端监听端口和本地mockServer的端口一样
+    /// 目前测试可能会失败，关闭所有Xcode项目重启后解决。可能是端口被占用。
     func testSearchDeviceInfo() {
         let dataSentExpectation = XCTestExpectation(description: "发送设备查找请求")
         let dataReceiveExpectation = XCTestExpectation(description: "获得返回设备信息")
@@ -100,7 +100,7 @@ final class YMLNWServiceTests: XCTestCase {
         addMockAsDiscoveredDevice(device: .localMockServer)
         
         //因为创建UPD通道没有设置listener的步骤，所以需要手动设置
-        sut.service.lisener = mockListener
+        sut.service.listener = mockListener
         
         XCTAssertTrue(sut.createUdpChannel(info: .localMockServer))
 //        XCTAssertEqual(sut.service.udpClient?.port, mockServer.udpPort)
@@ -227,4 +227,55 @@ final class YMLNWServiceTests: XCTestCase {
         
         return sendPack
     }
+  
+  //MARK: - 测试网络协议数据转换
+  func testMakeEncodedData() {
+    struct A: EncodedDatable {
+      var cmd: UInt16 = 0x0005
+      var ap: UInt32 = 0x01000001
+      var uint8: UInt8 = 0x11
+      var name: String = "hello"
+    }
+    
+    let encodedData = [UInt8]( A().encodedData )
+    let shouldData:[UInt8] = [0, 10, 0, 05, 1, 0, 0, 1, 17, 104, 101, 108, 108, 111]
+    
+    XCTAssertEqual(encodedData, shouldData)
+  }
+  
+  func testMakeEncodedDataWithEnumProperty() {
+    
+    struct A: EncodedDatable {
+      enum MouseEvent: UInt8, UInt8RawValue {
+        case move = 0x01
+        case leftButtonPress = 0x03
+        case leftButtonRelease = 0x04
+      }
+      enum Platform: UInt16, RawRepresentable, UInt16RawValue {
+        case mStar = 0x0811;
+        case mLogic = 0x0211
+      }
+      
+      enum PlayState:UInt32, RawRepresentable, UInt32RawValue {
+        case error = 0x00000000
+        case play = 0x00000001
+        case stop = 0x00000002
+        case pause = 0x00000003
+        case seek = 0x00000004
+      }
+      var packetCmd: UInt16 = 0x0070
+      var motion: MouseEvent = .leftButtonPress
+      var count: UInt16 = 5
+      var ap: UInt32 = 0x11000001
+      var name: String = "hello"
+      var playState: PlayState = .stop
+      var type: Platform = .mLogic
+      var json: String = "{com: 34}"
+    }
+    
+    let encodedData = [UInt8]( A().encodedData )
+    let shouldData:[UInt8] = [0, 27, 0, 112, 3, 0, 5, 17, 0, 0, 1, 104, 101, 108, 108, 111, 0, 0, 0, 2, 2, 17, 123, 99, 111, 109, 58, 32, 51, 52, 125]
+    
+    XCTAssertEqual(encodedData, shouldData)
+  }
 }

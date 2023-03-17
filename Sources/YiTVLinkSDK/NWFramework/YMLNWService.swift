@@ -23,7 +23,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     var udpListener: YMLNWListener!
     
     /// 应用提供回调
-    var lisener: YMLListener?
+    var listener: YMLListener?
     
     /// 当前可以连接的设备信息
     var discoveredDevice: [DiscoveryInfo] = []
@@ -42,7 +42,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
         let port = NWEndpoint.Port(rawValue: YMLNetwork.DEV_DISCOVERY_UDP_PORT)!
         let endpoint = NWEndpoint.hostPort(host: host, port: port)
         
-        let connection = YMLNWConnection(endpoint: endpoint, delegat: self, type: .udp)
+        let connection = YMLNWConnection(endpoint: endpoint, delegate: self, type: .udp)
         self.searchUdpClient = connection
     }
     
@@ -50,6 +50,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
         // 单元测试时避免搜寻设备时候server端upd端口和client监听端口一致😮‍💨
         #if TEST
         let port = YMLNetwork.DEV_DISCOVERY_UDP_PORT + 1
+      print("THIS IS TEST")
         #else
         let port = YMLNetwork.DEV_DISCOVERY_UDP_PORT
         #endif
@@ -65,7 +66,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     }
     
     func searchDeviceInfo(searchListener: YMLListener) {
-        lisener = searchListener
+        listener = searchListener
         searchDevice()
     }
     
@@ -76,7 +77,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
         let host = NWEndpoint.Host(info.localIp)
         guard let port = NWEndpoint.Port(rawValue: getTcpPort(from: info)!) else { return false }
         let endPoint = NWEndpoint.hostPort(host: host, port: port)
-        let connection = YMLNWConnection(endpoint: endPoint, delegat: self, type: .tcp)
+        let connection = YMLNWConnection(endpoint: endPoint, delegate: self, type: .tcp)
         tcpClient = connection
 
         hasConnectedToDevice = info
@@ -92,7 +93,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     /// 需要最先设置此方法来设置回调YMLListener
     /// - Parameter TCPListener: 回调YMLListener
     func receiveTcpData(TCPListener: YMLListener) {
-        lisener = TCPListener
+        listener = TCPListener
     }
     
     func closeTcpChannel() {
@@ -105,7 +106,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
         let host = NWEndpoint.Host(info.localIp)
         guard let port = NWEndpoint.Port(rawValue: getUdpPort(from: info)!) else { return false }
         let endPoint = NWEndpoint.hostPort(host: host, port: port)
-        let connection = YMLNWConnection(endpoint: endPoint, delegat: self, type: .udp)
+        let connection = YMLNWConnection(endpoint: endPoint, delegate: self, type: .udp)
         udpClient = connection
        
         hasConnectedToDevice = info
@@ -133,9 +134,9 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     func connectionReady(connection: YMLNWConnection) {
         switch connection.type {
         case .tcp:
-            lisener?.notified(with: "TCPCONNECTED")
+            listener?.notified(with: "TCPCONNECTED")
         case .udp:
-            lisener?.notified(with: "UDPCONNECTED")
+            listener?.notified(with: "UDPCONNECTED")
         default:
             break
         }
@@ -144,9 +145,9 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     func connectionFailed(connection: YMLNWConnection) {
         switch connection.type {
         case .tcp:
-            lisener?.notified(with: "TCPDISCONNECTED")
+            listener?.notified(with: "TCPDISCONNECTED")
         case .udp:
-            lisener?.notified(with: "UDPDISCONNECTED")
+            listener?.notified(with: "UDPDISCONNECTED")
         default:
             break
         }
@@ -156,7 +157,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
         guard let data = content else { return }
         switch connection.type {
         case .tcp:
-            lisener?.deliver(data: data)
+            listener?.deliver(data: data)
         case .udp:
             searchDeviceDataHandler(data: data)
         default:
@@ -164,12 +165,12 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
         }
     }
     
-    func displayAdvertizeError(_ error: NWError) {
-        lisener?.notified(error: error)
+    func displayAdvertiseError(_ error: NWError) {
+        listener?.notified(error: error)
     }
     
     func connectionError(connection: YMLNWConnection, error: NWError) {
-        lisener?.notified(error: error)
+        listener?.notified(error: error)
     }
 }
 
@@ -179,16 +180,16 @@ extension YMLNWService {
     /// 发送广播获取局域网内电视信息
     func searchDevice() {
         print("Start search device...")
-        let sendpack: Data = makeSeachDeviceSendPack()
+        let sendPack: Data = makeSearchDeviceSendPack()
         clearDiscoveredDevice()
 
-        searchUdpClient.send(content: sendpack)
+        searchUdpClient.send(content: sendPack)
     }
     
     /// 创建并返回用于搜索局域网设备的UDP广播包
     /// - Parameter device: 发出搜寻包的设备信息
     /// - Returns:带有搜寻设备名称信息的广播包数据
-    func makeSeachDeviceSendPack(with device: DeviceInfo? = nil) -> Data {
+    func makeSearchDeviceSendPack(with device: DeviceInfo? = nil) -> Data {
         let discoveryRequest = DiscoveryInfo(device: device ?? DeviceInfo(), TcpPort: 0, UdpPort: 0)
         discoveryRequest.encodeData = "Discovery"
       
@@ -205,17 +206,17 @@ extension YMLNWService {
         //  判断接受到的数据是不是服务器发送的设备信息
         guard discoveredInfo.cmd == 113 else { return }
         
-        recieveOneDevice(info: discoveredInfo)
+        receiveOneDevice(info: discoveredInfo)
     }
     
-    private func recieveOneDevice(info: DiscoveryInfo) {
+    private func receiveOneDevice(info: DiscoveryInfo) {
         print("--------- Technology research UDP did receive data \(info.device.description)-----------------")
         
         if !isContainsDevice(device: info.device) {
             addDiscovery(info: info)
                 
             let devices = discoveredDevice.map(\.device)
-            lisener?.deliver(devices: devices)
+            listener?.deliver(devices: devices)
         }
     }
     
@@ -236,16 +237,16 @@ extension YMLNWService {
     }
     
     private func statusHandler(status: YMLNetwork.Status) {
-        lisener?.notified(with: status.value)
+        listener?.notified(with: status.value)
     }
     
     private func successHandler(data: Data) {
-        lisener?.deliver(data: data)
+        listener?.deliver(data: data)
     }
     
     private func failureHandler(error: Error?) {
         if let error = error {
-            lisener?.notified(error: error)
+            listener?.notified(error: error)
         }
     }
     
@@ -258,7 +259,7 @@ extension YMLNWService {
         return broadcastIPAdd
         //        return "192.168.1.100"
         //        return "192.168.31.88"
-        //        return "127.0.0.1"
+//                return "127.0.0.1"
         //        return "255.255.255.255"
         #endif
     }
