@@ -16,11 +16,11 @@ protocol YMLNWListenerDelegate: YMLNWConnectionDelegate {
 
 class YMLNWListener {
     // MARK: - Types
-    
-    enum ServiceType {
-        case bonjour
-        case applicationService
-    }
+//
+//    enum ServiceType {
+//        case bonjour
+//        case applicationService
+//    }
 
     // MARK: - Properties
     

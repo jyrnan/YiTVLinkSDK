@@ -7,10 +7,39 @@
 
 
 import Foundation
-import YiTVLinkSDK
+@testable import YiTVLinkSDK
 import XCTest
+import Network
 
-class MockServerNW: NSObject {
+class MockServerNW: NSObject, YMLNWListenerDelegate, YMLNWConnectionDelegate {
+    func ListenerReady() {
+        
+    }
+    
+    func ListenerFailed() {
+        
+    }
+    
+    func connectionReady(connection: YiTVLinkSDK.YMLNWConnection) {
+        
+    }
+    
+    func connectionFailed(connection: YiTVLinkSDK.YMLNWConnection) {
+        
+    }
+    
+    func receivedMessage(content: Data?, connection: YiTVLinkSDK.YMLNWConnection) {
+        
+    }
+    
+    func displayAdvertiseError(_ error: NWError) {
+        
+    }
+    
+    func connectionError(connection: YiTVLinkSDK.YMLNWConnection, error: NWError) {
+        
+    }
+    
     
     typealias Callback = Optional<() -> Void>
     var udpServer: UDPServer?

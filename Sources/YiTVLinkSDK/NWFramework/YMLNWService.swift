@@ -203,6 +203,7 @@ extension YMLNWService {
     /// - Parameters:
     ///   - data: 收到的UDP数据（默认加密）
     func searchDeviceDataHandler(data: Data) {
+      print(#line, [UInt8](data))
         guard let discoveredInfo = try? JSONDecoder().decode(DiscoveryInfo.self, from: data) else { return }
         
         //  判断接受到的数据是不是服务器发送的设备信息
