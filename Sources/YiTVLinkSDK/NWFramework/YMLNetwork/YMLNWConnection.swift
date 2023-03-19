@@ -384,6 +384,9 @@ extension YMLNWConnection: Hashable {
   }
 }
 
+
+extension NWConnection: ConnectionProtocol {}
+
 protocol ConnectionProtocol: AnyObject {
   var state: NWConnection.State { get }
   var endpoint: NWEndpoint {get}
@@ -400,12 +403,16 @@ class MockConnection: ConnectionProtocol {
   let endpoint: NWEndpoint
   var stateUpdateHandler: ((_ state: NWConnection.State) -> Void)?
   var state: NWConnection.State = .ready
+  var receiveData: Data?
+  
+  var cancelWasCalled: Bool = false
+  var startWasCalled:Bool = false
   
   init(endpoint: NWEndpoint) {
     self.endpoint = endpoint
   }
   func send(content: Data?, contentContext: NWConnection.ContentContext = .defaultMessage, isComplete: Bool = true, completion: NWConnection.SendCompletion) {
-    
+    receiveData = content
   }
   
   func receiveMessage(completion: @escaping (_ completeContent: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void){
@@ -418,12 +425,10 @@ class MockConnection: ConnectionProtocol {
     
   }
   func start(queue: DispatchQueue){
-    
+    startWasCalled = true
   }
   func cancel(){
-    
+    cancelWasCalled = true
   }
 }
 
-extension NWConnection: ConnectionProtocol {
-}

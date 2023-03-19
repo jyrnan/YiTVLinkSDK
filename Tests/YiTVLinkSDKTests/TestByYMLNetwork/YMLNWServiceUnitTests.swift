@@ -8,7 +8,7 @@
 import XCTest
 @testable import YiTVLinkSDK
 
-final class YMLNWServiceUniTests: XCTestCase {
+final class YMLNWServiceUnitTests: XCTestCase {
   var sut: YMLNetwork!
 
   override func setUpWithError() throws {
@@ -36,4 +36,6 @@ final class YMLNWServiceUniTests: XCTestCase {
         
     wait(for: [expectation], timeout: 1)
   }
+  
+  
 }

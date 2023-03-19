@@ -11,10 +11,12 @@ import Network
 
 final class YMLNWConnectionTests: XCTestCase{
   var sut: YMLNWConnection!
-  var delegate: YMLNWConnectionDelegate!
+  var delegate: MockDelegate!
+  var mockConnection: MockConnection!
 
   override func setUpWithError() throws {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    try super.setUpWithError()
     delegate = MockDelegate()
   }
 
@@ -26,35 +28,29 @@ final class YMLNWConnectionTests: XCTestCase{
   }
   
   func testInitUDPConnectionActively() {
-    let port:UInt16 = 7788
-    let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host("127.0.0.1"), port: NWEndpoint.Port(rawValue: port)!)
-    
-    let sut = YMLNWConnection(endpoint: endpoint, delegate: delegate, type: .udp)
+    let endpoint = makeLocalEndpointWithRandomPort()
+    sut = YMLNWConnection(endpoint: endpoint, delegate: delegate, type: .udp)
     
     XCTAssertTrue(sut.initiatedConnection)
     XCTAssertEqual(sut.type, .udp)
   }
   
   func testInitTCPConnectionActively() {
-    let port:UInt16 = 7788
-    let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host("127.0.0.1"), port: NWEndpoint.Port(rawValue: port)!)
-    
-    let sut = YMLNWConnection(endpoint: endpoint, delegate: delegate)
+    let endpoint = makeLocalEndpointWithRandomPort()
+    sut = YMLNWConnection(endpoint: endpoint, delegate: delegate)
     
     XCTAssertTrue(sut.initiatedConnection)
     XCTAssertEqual(sut.type, .tcp)
   }
   
   func testConnectionNameChangeWhenReady() {
-    let port:UInt16 = 7788
-    let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host("127.0.0.1"), port: NWEndpoint.Port(rawValue: port)!)
-    
-    
-    let name = "127.0.0.1:7788"
-    guard let delegate = delegate as? MockDelegate else {return XCTFail()}
+    let endpoint = makeLocalEndpointWithRandomPort()
+    let name = endpoint.debugDescription
+   
+    guard let delegate = delegate else {return XCTFail()}
     let connectionReadyExpectation = XCTestExpectation(description: "发送设备查找请求")
     let callback = {
-      XCTAssertTrue( delegate.isConnectionReady )
+      XCTAssertTrue( delegate.connectionReadyWasCalled )
       XCTAssertEqual(self.sut.name, name)
       connectionReadyExpectation.fulfill()
     }
@@ -65,32 +61,57 @@ final class YMLNWConnectionTests: XCTestCase{
     
     wait(for: [connectionReadyExpectation], timeout: 1)
   }
-}
-
-class MockDelegate: YMLNWConnectionDelegate {
-  var isConnectionReady = false
-  var connectionReadyCallback: (() -> Void)?
-  func connectionReady(connection: YiTVLinkSDK.YMLNWConnection) {
-    guard let callback = connectionReadyCallback else {return}
-    isConnectionReady = true
-    callback()
-  }
   
-  func connectionFailed(connection: YiTVLinkSDK.YMLNWConnection) {
+  func testSendUDPDataWithMockConnection() {
+    setSutWithUDPMockConnectionOfRandomPort()
+    let testData = "testData".data(using: .utf8)
     
-  }
-  
-  func receivedMessage(content: Data?, connection: YiTVLinkSDK.YMLNWConnection) {
+    sut.send(content: testData!)
     
+    XCTAssertEqual(mockConnection.receiveData, testData)
   }
   
-  func displayAdvertiseError(_ error: NWError) {
+  func testStartConnection() {
+    setSutWithUDPMockConnectionOfRandomPort()
+    XCTAssertNotNil( mockConnection.stateUpdateHandler )
+    XCTAssertTrue(mockConnection.startWasCalled)
+  }
+  
+  func testCancel() {
+    setSutWithUDPMockConnectionOfRandomPort()
     
-  }
-  
-  func connectionError(connection: YiTVLinkSDK.YMLNWConnection, error: NWError) {
+    sut.cancel()
     
+    XCTAssertTrue(mockConnection.cancelWasCalled)
   }
   
+  func testShouldCallDelegateWhenConnectionStateIsFailed() {
+    setSutWithUDPMockConnectionOfRandomPort()
+    mockConnection.stateUpdateHandler?(.failed(NWError.posix(POSIXErrorCode(rawValue: 64)!)))
+    XCTAssertTrue(delegate.connectionFailed)
+  }
   
+  //MARK: - Private method
+  fileprivate func setSutWithUDPMockConnectionOfRandomPort() {
+    let endpoint = makeLocalEndpointWithRandomPort()
+    sut = YMLNWConnection(endpoint: endpoint, delegate: delegate, type: .udp)
+    mockConnection = MockConnection(endpoint: endpoint)
+    sut.connection = mockConnection
+    sut.startConnection()
+  }
+  
+  fileprivate func setSutWithTCPMockConnectionOfRandomPort() {
+    let endpoint = makeLocalEndpointWithRandomPort()
+    sut = YMLNWConnection(endpoint: endpoint, delegate: delegate)
+    mockConnection = MockConnection(endpoint: endpoint)
+    sut.connection = mockConnection
+    sut.startConnection()
+  }
+  
+  fileprivate func makeLocalEndpointWithRandomPort() ->NWEndpoint {
+    let port = TestUtility.makeRandomValidPort()
+    let host = "127.0.0.1"
+    return NWEndpoint.hostPort(host: NWEndpoint.Host(host),
+                               port: NWEndpoint.Port(rawValue: port)!)
+  }
 }
