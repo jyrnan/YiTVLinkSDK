@@ -7,6 +7,7 @@
 
 import Foundation
 import Network
+import os.log
 
 protocol YMLNWConnectionDelegate: AnyObject {
   func connectionReady(connection: YMLNWConnection)
@@ -29,7 +30,7 @@ class YMLNWConnection {
 
   weak var delegate: YMLNWConnectionDelegate?
     
-  var connection: NWConnection?
+  var connection: ConnectionProtocol?
   let endPoint: NWEndpoint?
   let id: UUID = .init()
     
@@ -43,9 +44,11 @@ class YMLNWConnection {
   var parameters: NWParameters = .tcp
     
   // 标记连接是主动发起连接还是被动接入连接
-  let initatedConnection: Bool
+  let initiatedConnection: Bool
     
   var heartbeatTimer: Timer?
+    
+  let log = OSLog(subsystem: "com.et.YiTVLinkSDK", category: "YMLNWConnection")
     
   // MARK: - inits
     
@@ -61,7 +64,7 @@ class YMLNWConnection {
         
     let connection = NWConnection(to: endpoint, using: parameters)
     self.connection = connection
-    self.initatedConnection = true
+    self.initiatedConnection = true
 
     startConnection()
   }
@@ -74,7 +77,7 @@ class YMLNWConnection {
         
     let connection = NWConnection(to: endpoint, using: passcode == "" ? .tcp : NWParameters(passcode: passcode))
     self.connection = connection
-    self.initatedConnection = true
+    self.initiatedConnection = true
 
     startConnection()
   }
@@ -85,7 +88,7 @@ class YMLNWConnection {
     self.endPoint = nil
 
     self.connection = connection
-    self.initatedConnection = false
+    self.initiatedConnection = false
         
     startConnection()
   }
@@ -112,11 +115,12 @@ class YMLNWConnection {
       case .ready:
         self.name = connection.endpoint.debugDescription
         print("\(connection) established")
-                
+        os_log("established", log: self.log)
+        
         // 如果准备就绪就开始接收消息
         self.setReceive()
                 
-        // 如果是UDP则通知代理已经准备好，TCP需要在握手完成后才通知
+        // TODO: - 需要修改：如果是UDP则通知代理已经准备好，TCP需要在握手完成后才通知
         if let delegate = self.delegate, self.type == .udp {
           delegate.connectionReady(connection: self)
         }
@@ -129,7 +133,7 @@ class YMLNWConnection {
                 
         // 依据情况决定是否重新连接,条件：如果是主动发起连接，并且错误是对方
         if let endPoint = self.endPoint,
-           self.initatedConnection,
+           self.initiatedConnection,
            error == NWError.posix(.ECONNABORTED)
         {
           // 符合条件的话重新创建连接
@@ -161,13 +165,13 @@ class YMLNWConnection {
         
     // 如果是UDP连接协议，则采用这部分的接收方法
     if case .udp = type {
-      print("Send \(content.count) bytes")
-            
-      connection.send(content: content, completion: .contentProcessed { [weak self] error in
+      connection.send(content: content, contentContext: .defaultMessage, isComplete: true, completion: .contentProcessed { [weak self] error in
         guard let self = self else { return }
                 
         if let error = error {
           self.delegate?.connectionError(connection: self, error: error)
+        } else {
+          print("Send \(content.count) bytes")
         }
       })
             
@@ -197,13 +201,13 @@ class YMLNWConnection {
     print("Send \(content.count) bytes")
         
     connection.batch {
-      connection.send(content: sizePrefix, completion: .contentProcessed { [weak self] error in
+      connection.send(content: sizePrefix, contentContext: .defaultMessage, isComplete: true, completion: .contentProcessed { [weak self] error in
         guard let self = self else { return }
         if let error = error {
           self.delegate?.connectionError(connection: self, error: error)
         }
       })
-      connection.send(content: content, completion: .contentProcessed { [weak self] error in
+      connection.send(content: content, contentContext: .defaultMessage, isComplete: true, completion: .contentProcessed { [weak self] error in
         guard let self = self else { return }
         if let error = error {
           self.delegate?.connectionError(connection: self, error: error)
@@ -214,7 +218,7 @@ class YMLNWConnection {
     
   func registerACKHandler(data: Data) {
     let registACKData = makeRegisterACKPack(data: data)
-    connection?.send(content: registACKData, completion: .contentProcessed { [weak self] error in
+    connection?.send(content: registACKData, contentContext: .defaultMessage, isComplete: true, completion: .contentProcessed { [weak self] error in
       guard let self = self else { return }
             
       if let error = error {
@@ -346,7 +350,7 @@ class YMLNWConnection {
   // MARK: - Heartbeat
     
   func startHeartbeat() {
-    guard initatedConnection, case .tls = type else { return }
+    guard initiatedConnection, case .tls = type else { return }
         
     heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { _ in
       self.sendHeartbeat()
@@ -379,4 +383,47 @@ extension YMLNWConnection: Hashable {
     hasher.combine(id)
   }
 }
+
+protocol ConnectionProtocol: AnyObject {
+  var state: NWConnection.State { get }
+  var endpoint: NWEndpoint {get}
+  var stateUpdateHandler: ((_ state: NWConnection.State) -> Void)? {set get}
+  func send(content: Data?, contentContext: NWConnection.ContentContext, isComplete: Bool, completion: NWConnection.SendCompletion)
+  func receiveMessage(completion: @escaping (_ completeContent: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool , _ error: NWError?) -> Void)
+  func receive(minimumIncompleteLength: Int, maximumLength: Int, completion: @escaping (_ content: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void)
+  func batch(_ block: () -> Void)
+  func start(queue: DispatchQueue)
+  func cancel()
+}
+
+class MockConnection: ConnectionProtocol {
+  let endpoint: NWEndpoint
+  var stateUpdateHandler: ((_ state: NWConnection.State) -> Void)?
+  var state: NWConnection.State = .ready
+  
+  init(endpoint: NWEndpoint) {
+    self.endpoint = endpoint
+  }
+  func send(content: Data?, contentContext: NWConnection.ContentContext = .defaultMessage, isComplete: Bool = true, completion: NWConnection.SendCompletion) {
     
+  }
+  
+  func receiveMessage(completion: @escaping (_ completeContent: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void){
+    
+  }
+  func receive(minimumIncompleteLength: Int, maximumLength: Int, completion: @escaping (_ content: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void){
+    
+  }
+  func batch(_ block: () -> Void){
+    
+  }
+  func start(queue: DispatchQueue){
+    
+  }
+  func cancel(){
+    
+  }
+}
+
+extension NWConnection: ConnectionProtocol {
+}

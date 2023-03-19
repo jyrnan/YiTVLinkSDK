@@ -175,6 +175,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
 }
 
 // MARK: - 设备查找
+// TODO: - 需要按照旧版发送，并在接收到data后按照版本号解析body部分
 
 extension YMLNWService {
     /// 发送广播获取局域网内电视信息
@@ -199,6 +200,7 @@ extension YMLNWService {
       return deviceDiscoveryData
     }
 
+  //TODO: - 需要按照旧协议进行解析
     /// 处理发送设备搜寻广播后收到的UDP数据
     /// - Parameters:
     ///   - data: 收到的UDP数据（默认加密）
@@ -239,19 +241,19 @@ extension YMLNWService {
         return discoveredDevice.removeAll()
     }
     
-    private func statusHandler(status: YMLNetwork.Status) {
-        listener?.notified(with: status.value)
-    }
-    
-    private func successHandler(data: Data) {
-        listener?.deliver(data: data)
-    }
-    
-    private func failureHandler(error: Error?) {
-        if let error = error {
-            listener?.notified(error: error)
-        }
-    }
+//    private func statusHandler(status: YMLNetwork.Status) {
+//        listener?.notified(with: status.value)
+//    }
+//    
+//    private func successHandler(data: Data) {
+//        listener?.deliver(data: data)
+//    }
+//    
+//    private func failureHandler(error: Error?) {
+//        if let error = error {
+//            listener?.notified(error: error)
+//        }
+//    }
     
     private func getBroadcastIPAddr() -> String {
         guard let addressOfWifi = getWiFiAddress() else { return "255.255.255.255" }
