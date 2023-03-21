@@ -15,12 +15,6 @@ protocol YMLNWListenerDelegate: YMLNWConnectionDelegate {
 }
 
 class YMLNWListener {
-    // MARK: - Types
-//
-//    enum ServiceType {
-//        case bonjour
-//        case applicationService
-//    }
 
     // MARK: - Properties
     
@@ -69,6 +63,8 @@ class YMLNWListener {
             parameters = .tcp
         } else {
             parameters = .udp
+          // 这里的端口复用可以取消，可能是和创建的顺序有关？
+//          parameters.allowLocalEndpointReuse = true
         }
         
         guard let port = NWEndpoint.Port(rawValue: port) else {return}

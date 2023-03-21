@@ -35,23 +35,21 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     // MARK: - Properties
 
     // 模拟数据实例
-    @objc public static let mock = YMLNetwork(service: YMLNWServiceMock())
-    @objc public static let shared = YMLNetwork(service: YMLNWService())
+//    @objc public static let mock = YMLNetwork()
+    @objc public static let shared = YMLNetwork()
     
-    var service: YMLNWServiceProtocol = YMLNWService()
+    let service: YMLNWServiceProtocol = YMLNWService()
 
     // MARK: - Initializers
 
-    private init(service: YMLNWServiceProtocol) {
-        self.service = service
-    }
+  private override init() {
     
-    override init() {}
+  }
     
     // MARK: - APIs
 
     @objc public func initSDK(key: String) {
-        service.initSDK(key: key)
+      service.initSDK(key: key)
     }
     
     @objc public func searchDeviceInfo(searchListener: YMLListener) {

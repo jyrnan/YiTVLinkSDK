@@ -22,7 +22,7 @@ struct DeviceDiscoverPacket: EncodedDatable {
   
   let packetCMD: UInt16         = 0x0070
   let service_id: UInt32        = 0x0000_0000
-  let protocol_version: UInt16  = 0x0009
+  let protocol_version: UInt16  = 0x0008
   let dev_type:Platform         = .mobile_iOS
   let dev_name:String
 }

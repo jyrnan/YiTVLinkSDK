@@ -33,7 +33,7 @@ class YMLNWConnection {
   var connection: ConnectionProtocol?
   let endPoint: NWEndpoint?
   let id: UUID = .init()
-    
+      
   // 以连接ip和端口号作为该连接的名字，连接准备就绪时会修改成ip和端口号
   var name: String = ""
     
@@ -60,8 +60,11 @@ class YMLNWConnection {
         
     if case .udp = type {
       parameters = .udp
+      parameters.requiredLocalEndpoint = NWEndpoint.hostPort(host: NWEndpoint.Host("0.0.0.0"), port: NWEndpoint.Port(rawValue: YMLNetwork.DEV_DISCOVERY_UDP_LISTEN_PORT)!)
+      parameters.requiredInterfaceType = .wifi
+      parameters.allowLocalEndpointReuse = true
     }
-        
+    
     let connection = NWConnection(to: endpoint, using: parameters)
     self.connection = connection
     self.initiatedConnection = true
@@ -121,7 +124,7 @@ class YMLNWConnection {
         self.setReceive()
                 
         // TODO: - 需要修改：如果是UDP则通知代理已经准备好，TCP需要在握手完成后才通知
-        if let delegate = self.delegate, self.type == .udp {
+        if let delegate = self.delegate {
           delegate.connectionReady(connection: self)
         }
             
@@ -191,23 +194,24 @@ class YMLNWConnection {
             
       return
     }
-        
+        //TODO: - TCP发送的方式究竟是否需要添加包头？
+    // 下面的代码暂时不需要了，因为包头会在应用层添加
     // 如果是TCP连接协议，数据采用加入长度头的封包方法，这是通用的封包方法
     // 获取后续包长度，需要加上类型长度2
-    var sizePrefix = withUnsafeBytes(of: UInt16(content.count + 2).bigEndian) { Data($0) }
+    var sizePrefix = withUnsafeBytes(of: UInt16(content.count).bigEndian) { Data($0) }
     // 包长度数据后添加包类型数据
-    sizePrefix.append(contentsOf: [0x01, 0x00])
+    sizePrefix.append(contentsOf: [0x30, 0x04])
         
     print("Send \(content.count) bytes")
-        
+        //TODO: - 这个方法里面的isComplete要设置成false，否则会断开连接。
     connection.batch {
-      connection.send(content: sizePrefix, contentContext: .defaultMessage, isComplete: true, completion: .contentProcessed { [weak self] error in
-        guard let self = self else { return }
-        if let error = error {
-          self.delegate?.connectionError(connection: self, error: error)
-        }
-      })
-      connection.send(content: content, contentContext: .defaultMessage, isComplete: true, completion: .contentProcessed { [weak self] error in
+//      connection.send(content: sizePrefix, contentContext: .defaultMessage, isComplete: false, completion: .contentProcessed { [weak self] error in
+//        guard let self = self else { return }
+//        if let error = error {
+//          self.delegate?.connectionError(connection: self, error: error)
+//        }
+//      })
+      connection.send(content: content, contentContext: .defaultMessage, isComplete: false, completion: .contentProcessed { [weak self] error in
         guard let self = self else { return }
         if let error = error {
           self.delegate?.connectionError(connection: self, error: error)
@@ -264,6 +268,7 @@ class YMLNWConnection {
     connection.receiveMessage { content, _, _, error in
             
       if let data = content, !data.isEmpty {
+        print("\(connection.endpoint.debugDescription) recieve \(data.count) bytes")
         self.delegate?.receivedMessage(content: content, connection: self)
       }
             
@@ -281,11 +286,13 @@ class YMLNWConnection {
     connection?.receive(minimumIncompleteLength: MemoryLayout<UInt16>.size, maximumLength: MemoryLayout<UInt16>.size) { content, context, isComplete, error in
       var sizePrefix: UInt16 = 0
             
-      // 解码获取长度值
+      // 解码获取body长度值
       if let data = content, !data.isEmpty {
         sizePrefix = data.withUnsafeBytes { ptr in
           ptr.bindMemory(to: UInt16.self)[0].bigEndian
         }
+        
+        sizePrefix += 2 // 需要在body长度加上CMD的2个字节
       }
             
       if isComplete {
@@ -303,14 +310,16 @@ class YMLNWConnection {
             print(#line, logMessage)
                         
             let typeHead = Array(data[0 ... 1])
-            let remainData = data[2...]
+//            let remainData = data[2...]
             switch typeHead {
-            case [0x00, 0x01]:
-              print(#line, "收到心跳包")
-            case [0x00, 0x02]:
-              self.registerACKHandler(data: remainData)
+            case [0x40, 0x01]:break
+//              print(#line, "收到心跳包")
+//            case [0x00, 0x02]:
+//              self.registerACKHandler(data: remainData)
             case [0x01, 0x00]:
-              self.delegate?.receivedMessage(content: remainData, connection: self)
+              let remainData = data.dropFirst(2)
+              if !remainData.isEmpty {
+                self.delegate?.receivedMessage(content: remainData, connection: self)}
 
             default:
               break
@@ -350,7 +359,7 @@ class YMLNWConnection {
   // MARK: - Heartbeat
     
   func startHeartbeat() {
-    guard initiatedConnection, case .tls = type else { return }
+    guard initiatedConnection, case .tcp = type else { return }
         
     heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { _ in
       self.sendHeartbeat()
@@ -363,12 +372,13 @@ class YMLNWConnection {
     guard let connection = connection else { return }
         
     let timestamp = Date()
-    let content = "heartbeat, connection: \(name), timestamp: \(timestamp)\r\n".data(using: .utf8)
-        
+    let content: Data = Data([UInt8](arrayLiteral: 0x00, 0x00, 0x10, 0x00))
+    
     let message = NWProtocolFramer.Message(YMLNWMessageType: .heart)
     let context = NWConnection.ContentContext(identifier: "heartbeat", metadata: [message])
         
-    connection.send(content: content, contentContext: context, isComplete: true, completion: .idempotent)
+//    connection.send(content: content, contentContext: context, isComplete: true, completion:  .idempotent)
+    send(content: content)
   }
 }
 
