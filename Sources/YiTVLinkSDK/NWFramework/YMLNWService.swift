@@ -37,15 +37,15 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     super.init()
     setupSearchUdpClient()
     setupUdpListener()
-    setupGroup()
+//    setupGroup()
   }
     
   private func setupSearchUdpClient() {
-    let host = NWEndpoint.Host(getBroadcastIPAddr())
+    let host = NWEndpoint.Host("255.255.255.255")
     let port = NWEndpoint.Port(rawValue: YMLNetwork.DEV_DISCOVERY_UDP_PORT)!
     let endpoint = NWEndpoint.hostPort(host: host, port: port)
         
-    let connection = YMLNWConnection(endpoint: endpoint, delegate: self, type: .udp)
+    let connection = YMLNWConnection(endpoint: endpoint, delegate: self, type: .broadcast)
       
     searchUdpClient = connection
   }
@@ -227,22 +227,17 @@ extension YMLNWService {
 
     searchUdpClient.send(content: sendPack)
       
-    groupConnection.send(content: sendPack, completion: { error in
+//    groupConnection.send(content: sendPack, completion: { error in
 
-      print(error?.debugDescription)
-      print(#line, #function, sendPack)
-    })
+//      print(error?.debugDescription)
+//      print(#line, #function, sendPack)
+//    })
   }
     
   /// 创建并返回用于搜索局域网设备的UDP广播包
   /// - Parameter device: 发出搜寻包的设备信息
   /// - Returns:带有搜寻设备名称信息的广播包数据
   func makeSearchDeviceSendPack(with device: DeviceInfo? = nil) -> Data {
-//        let discoveryRequest = DiscoveryInfo(device: device ?? DeviceInfo(), TcpPort: 0, UdpPort: 0)
-//        discoveryRequest.encodeData = "Discovery"
-//
-//        let sendPack = try! JSONEncoder().encode(discoveryRequest)
-//        return sendPack
     let deviceDiscoveryData = DeviceDiscoverPacket(dev_name: "My iPhone").encodedData
     return deviceDiscoveryData
   }

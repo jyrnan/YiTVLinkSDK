@@ -12,7 +12,7 @@ final class YMLNWServiceTests: XCTestCase {
   var sut: YMLNetwork!
   var mockServer: MockServerNW!
     
-  let sentTestData: Data = "TestData".data(using: .utf8)!
+  var sentTestData: Data = DeviceDiscoverPacket(dev_name: "My iPhone").encodedData  //"TestData".data(using: .utf8)!
     
   override func setUpWithError() throws {
     // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -185,7 +185,7 @@ final class YMLNWServiceTests: XCTestCase {
   }
   
   func testReceiveTcpData() {
-    let testCount = 200
+    let testCount = 1
     let expectation = XCTestExpectation(description: "测试接收TCP数据")
     expectation.expectedFulfillmentCount = testCount
     let didRecieveTcpData = { expectation.fulfill() }

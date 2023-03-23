@@ -42,7 +42,7 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
 
     // MARK: - Initializers
 
-  private override init() {
+  override init() {
     
   }
     

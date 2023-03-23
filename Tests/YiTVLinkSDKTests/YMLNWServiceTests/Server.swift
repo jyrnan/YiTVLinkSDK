@@ -50,7 +50,7 @@ class Server {
         connection.shouldRecieveData = self.shouldRecieveData
         
         connection.start()
-        connection.send(data: makeRegisterMockPack())
+//        connection.send(data: makeRegisterMockPack())
 //        connection.send(data: "Welcome you are connection: \(connection.id)".data(using: .utf8)!)
         print("TCP server did open connection \(connection.id)")
     }

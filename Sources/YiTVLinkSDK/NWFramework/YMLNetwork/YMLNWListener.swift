@@ -45,14 +45,6 @@ class YMLNWListener {
         self.setupNoSSLListener()
     }
     
-    // 创建一个指定端口号的支持SSL和bonjour监听者用来接收连接
-    init(delegate: YMLNWListenerDelegate, name: String, passcode: String) {
-        self.delegate = delegate
-        self.name = name
-        self.passcode = passcode
-        self.type = .tls
-        self.setupBonjourTcpListener()
-    }
     
     // MARK: - Setup listener
     
@@ -80,25 +72,6 @@ class YMLNWListener {
         }
     }
     
-    private func setupBonjourTcpListener() {
-        do {
-            guard let name = self.name, let passcode = self.passcode else {
-                print("Cannot create Bonjour listener without name and passcode")
-                return
-            }
-            
-            let listener = try NWListener(using: NWParameters(passcode: passcode))
-            self.listener = listener
-            
-            // Set the service to advertise.
-            listener.service = NWListener.Service(name: name, type: "_demoNWapp._tcp")
-            
-            self.startListening()
-        } catch {
-            print("创建服务监听失败")
-            abort()
-        }
-    }
     
     // MARK: - Start and stop
     

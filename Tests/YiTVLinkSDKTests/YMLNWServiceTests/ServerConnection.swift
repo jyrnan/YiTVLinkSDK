@@ -60,9 +60,10 @@ class ServerConnection {
                 
                 if let echoData = self.echoData { self.send(data: echoData) } else {
                     self.send(data: data)
+                  print(#line, data as NSData)
                 } //echo回数据
                 if let shouldRecieveData = self.shouldRecieveData {
-                    if data[4...] == shouldRecieveData { self.didReceivedCallback?() } //如果有设置判定数据，则必须收到和数据和判定数据一致才能执行可能的回调方法
+                    if data == shouldRecieveData { self.didReceivedCallback?() } //如果有设置判定数据，则必须收到和数据和判定数据一致才能执行可能的回调方法
                 } else {
                     self.didReceivedCallback?() //如果没有设置判定数据，则直接执行可能的回调方法
                 }
@@ -85,7 +86,7 @@ class ServerConnection {
                 self.connectionDidFail(error: error)
                 return
             }
-            print("connection \(self.id) did send, data: \(data as NSData)")
+          print(#line, "connection \(self.id) did send to , data: \(data as NSData)")
         }))
     }
     

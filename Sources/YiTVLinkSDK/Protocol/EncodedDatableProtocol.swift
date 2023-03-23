@@ -11,12 +11,12 @@ import Foundation
 ///  协议格式如下：
 ///   header：body数据长度（2 Bytes） + 命令字（2 Bytes）
 ///   body：各个属性的数据依次拼接
-protocol EncodedDatable {
+protocol EncodedDatableProtocol {
   var encodedData: Data { get }
 }
 
 /// 遵循此协议的struct可以获得encodeData
-extension EncodedDatable {
+extension EncodedDatableProtocol {
   
   var encodedData: Data {
     let headerCMDLength = MemoryLayout<UInt16>.size

@@ -1,41 +1,41 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by jyrnan on 2023/3/19.
 //
 
 import Foundation
-@testable import YiTVLinkSDK
 import Network
+@testable import YiTVLinkSDK
 
-
-class MockDelegate: YMLNWConnectionDelegate {
+class MockNWConnectionDelegate: YMLNWConnectionDelegate {
   var connectionReadyWasCalled = false
-  var connectionFailed = false
+  var connectionFailedWasCalled = false
+  var receiveMessageContent:Data?
+  var displayAdvertiseError: NWError?
+  var connectionError: NWError?
+  
   var connectionReadyCallback: (() -> Void)?
   
   func connectionReady(connection: YiTVLinkSDK.YMLNWConnection) {
-    guard let callback = connectionReadyCallback else {return}
     connectionReadyWasCalled = true
-    callback()
+    if let callback = connectionReadyCallback { callback()}
   }
   
   func connectionFailed(connection: YiTVLinkSDK.YMLNWConnection) {
-    connectionFailed = true
+    connectionFailedWasCalled = true
   }
   
   func receivedMessage(content: Data?, connection: YiTVLinkSDK.YMLNWConnection) {
-    
+    receiveMessageContent = content
   }
   
   func displayAdvertiseError(_ error: NWError) {
-    
+    displayAdvertiseError = error
   }
   
   func connectionError(connection: YiTVLinkSDK.YMLNWConnection, error: NWError) {
-    
+    connectionError = error
   }
-  
-  
 }

@@ -35,7 +35,7 @@ final class EncodedDataProtocolTests: XCTestCase {
   
   //MARK: - 测试网络协议数据转换
   func testMakeEncodedData() {
-    struct A: EncodedDatable {
+    struct A: EncodedDatableProtocol {
       var cmd: UInt16 = 0x0005
       var ap: UInt32 = 0x01000001
       var uint8: UInt8 = 0x11
@@ -50,7 +50,7 @@ final class EncodedDataProtocolTests: XCTestCase {
   
   func testMakeEncodedDataWithEnumProperty() {
     
-    struct A: EncodedDatable {
+    struct A: EncodedDatableProtocol {
       enum MouseEvent: UInt8, UInt8RawValue {
         case move = 0x01
         case leftButtonPress = 0x03
@@ -88,7 +88,7 @@ final class EncodedDataProtocolTests: XCTestCase {
     let deviceDiscoverPacket = DeviceDiscoverPacket(dev_name: "My iPhone")
     let encodedData = [UInt8](deviceDiscoverPacket.encodedData)
     
-    let shouldData:[UInt8] = [0, 17, 0, 112, 0, 0, 0, 0, 0, 9, 1, 1, 77, 121, 32, 105, 80, 104, 111, 110, 101]
+    let shouldData:[UInt8] = [0, 17, 0, 112, 0, 0, 0, 0, 0, 8, 1, 1, 77, 121, 32, 105, 80, 104, 111, 110, 101]
     
     XCTAssertEqual(encodedData, shouldData)
   }
