@@ -17,6 +17,12 @@ enum TestUtility {
     let value = maxPort - minPort + 1
     return UInt16(minPort + arc4random_uniform(value))
   }
+  
+  static func makeEndpointOnLocalRandomPort() -> NWEndpoint {
+    let port = makeRandomValidPort()
+    return NWEndpoint.hostPort(host: NWEndpoint.Host("127.0.0.1"), port: NWEndpoint.Port(rawValue: port)!)
+    
+  }
 }
 
 struct TestData: EncodedDatableProtocol {

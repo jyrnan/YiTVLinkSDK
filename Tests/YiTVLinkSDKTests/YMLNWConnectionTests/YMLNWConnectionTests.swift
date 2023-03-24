@@ -11,13 +11,13 @@ import XCTest
 
 final class YMLNWConnectionTests: XCTestCase {
   var sut: YMLNWConnection!
-  var mockDelegate: MockNWConnectionDelegate!
+  var mockDelegate: MockYMLNWConnectionDelegate!
   var mockNWConnection: MockNWConnection!
 
   override func setUpWithError() throws {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     try super.setUpWithError()
-    mockDelegate = MockNWConnectionDelegate()
+    mockDelegate = MockYMLNWConnectionDelegate()
   }
 
   override func tearDownWithError() throws {
@@ -210,6 +210,7 @@ final class YMLNWConnectionTests: XCTestCase {
     mockNWConnection.stateUpdateHandler?(.ready) // 确保设置好receive方法
     
     let testData = TestData().encodedData
+    /// 这里需要注意：模拟发送TCP数据需要按照接受的方式分两次来发送
     /// 这里需要按照receive方法分两次发送，先发头部4字节，再发剩余部分
     mockNWConnection.receiveCompletion?(testData[0 ..< 4], nil, false, nil)
     mockNWConnection.receiveCompletion?(testData[4...], nil, false, nil)

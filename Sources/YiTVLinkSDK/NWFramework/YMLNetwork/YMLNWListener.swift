@@ -8,6 +8,15 @@
 import Foundation
 import Network
 
+protocol ListenerProtocol: AnyObject {
+  var stateUpdateHandler: ((_ newState: NWListener.State) -> Void)? {get set}
+  var newConnectionHandler: ((_ connection: NWConnection) -> Void)? {get set}
+  var port: NWEndpoint.Port? { get }
+
+  func start(queue: DispatchQueue)
+  func cancel()
+}
+
 // 应为Listener需要管理部分Connection，并向上透传connection的调用，所以继承YMLNWConnectionDelegate
 protocol YMLNWListenerDelegate: YMLNWConnectionDelegate {
     func ListenerReady()
@@ -19,20 +28,13 @@ class YMLNWListener {
     // MARK: - Properties
     
     weak var delegate: YMLNWListenerDelegate?
-    var listener: NWListener?
-    var port: UInt16 = 8899
+    var listener: ListenerProtocol?
+    let port: UInt16
     
     //设置监听连接类型
     var type: PeerType = .tcp
     
     var connectionsByID: [UUID: YMLNWConnection] = [:]
-    
-    // 预设连接的类型参数
-//    var parameters: NWParameters = .tcp
-    
-    // 用于bonjour发现
-    var name: String?
-    var passcode: String?
     
     // MARK: - Inits
     
@@ -42,14 +44,14 @@ class YMLNWListener {
         self.delegate = delegate
         self.type = type
         
-        self.setupNoSSLListener()
+        self.setupListener()
     }
     
     
     // MARK: - Setup listener
     
     // 创建一个指定端口号的监听者用来接收连接，根据指定类型来创建tcp或者udp，默认tcp
-    private func setupNoSSLListener() {
+    private func setupListener() {
         let parameters: NWParameters
         if case .tcp = type {
             parameters = .tcp
@@ -89,7 +91,7 @@ class YMLNWListener {
         if let listener = listener {
             listener.cancel()
         }
-        
+        listener = nil
         // 停止并移除所有监听保存的连接
         self.connectionsByID.values.forEach { $0.cancel() }
         self.connectionsByID.removeAll()
@@ -105,11 +107,6 @@ class YMLNWListener {
             print("Listener ready on \(String(describing: self.listener?.port))")
             self.delegate?.ListenerReady()
         case .failed(let error):
-//            if error == NWError.dns(DNSServiceErrorType(kDNSServiceErr_DefunctConnection)) {
-//                print("Listener failed with \(error), restarting")
-//                self.listener?.cancel()
-//                self.setupNoSSLListener()
-//            } else {
             print("Listener failed with \(error), stopping")
             self.delegate?.displayAdvertiseError(error)
             self.delegate?.ListenerFailed()
@@ -163,3 +160,5 @@ extension YMLNWListener: YMLNWConnectionDelegate {
         self.delegate?.connectionError(connection: connection, error: error)
     }
 }
+
+extension NWListener: ListenerProtocol{ }

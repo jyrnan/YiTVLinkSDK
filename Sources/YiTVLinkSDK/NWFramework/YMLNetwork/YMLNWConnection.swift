@@ -13,9 +13,11 @@ protocol ConnectionProtocol: AnyObject {
   var state: NWConnection.State { get }
   var endpoint: NWEndpoint { get }
   var stateUpdateHandler: ((_ state: NWConnection.State) -> Void)? { set get }
+  
   func send(content: Data?, contentContext: NWConnection.ContentContext, isComplete: Bool, completion: NWConnection.SendCompletion)
   func receiveMessage(completion: @escaping (_ completeContent: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void)
   func receive(minimumIncompleteLength: Int, maximumLength: Int, completion: @escaping (_ content: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void)
+  
   func start(queue: DispatchQueue)
   func cancel()
 }
@@ -24,6 +26,7 @@ protocol YMLNWConnectionDelegate: AnyObject {
   func connectionReady(connection: YMLNWConnection)
   func connectionFailed(connection: YMLNWConnection)
   func receivedMessage(content: Data?, connection: YMLNWConnection)
+  //TODO: - 这个方法可能不需要，可以考虑精简掉
   func displayAdvertiseError(_ error: NWError)
   func connectionError(connection: YMLNWConnection, error: NWError)
 }
@@ -89,7 +92,7 @@ class YMLNWConnection {
   }
     
   // 创建收到连接请求时候的被动接入连接
-  init(connection: NWConnection, delegate: YMLNWConnectionDelegate) {
+  init(connection: ConnectionProtocol, delegate: YMLNWConnectionDelegate) {
     self.delegate = delegate
     self.endPoint = nil
 
@@ -150,6 +153,7 @@ class YMLNWConnection {
       } else if let delegate = self.delegate {
         // 通知代理连接已经断开
         delegate.connectionFailed(connection: self)
+        delegate.connectionError(connection: self, error: error)
       }
     case .cancelled:
       self.delegate?.connectionFailed(connection: self)
