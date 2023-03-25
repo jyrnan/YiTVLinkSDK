@@ -32,9 +32,7 @@ class BaseMockServer: NSObject, YMLNWListenerDelegate {
   func connectionFailed(connection: YiTVLinkSDK.YMLNWConnection) {}
   
   func receivedMessage(content: Data?, connection: YiTVLinkSDK.YMLNWConnection) {}
-  
-  func displayAdvertiseError(_ error: NWError) {}
-  
+    
   func connectionError(connection: YiTVLinkSDK.YMLNWConnection, error: NWError) {}
   
   func ListenerReady() {}

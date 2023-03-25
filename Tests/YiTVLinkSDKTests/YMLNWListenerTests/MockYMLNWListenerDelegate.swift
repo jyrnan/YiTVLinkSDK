@@ -16,7 +16,6 @@ class MockYMLNWListenerDelegate: YMLNWListenerDelegate {
   var connectionReadyWasCalled = false
   var connectionFailedWasCalled = false
   var receiveMessageContent:Data?
-  var displayAdvertiseError: NWError?
   var connectionError: NWError?
   
   var connectionId: UUID?
@@ -43,11 +42,7 @@ class MockYMLNWListenerDelegate: YMLNWListenerDelegate {
     receiveMessageContent = content
     connectionId = connection.id
   }
-  
-  func displayAdvertiseError(_ error: NWError) {
-    displayAdvertiseError = error
-  }
-  
+ 
   func connectionError(connection: YiTVLinkSDK.YMLNWConnection, error: NWError) {
     connectionError = error
     connectionId = connection.id

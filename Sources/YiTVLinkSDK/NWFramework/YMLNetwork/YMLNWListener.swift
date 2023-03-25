@@ -102,13 +102,12 @@ class YMLNWListener {
         case .setup:
             break
         case .waiting(let error):
-            self.delegate?.displayAdvertiseError(error)
+          print("Listener is waiting with \(error)")
         case .ready:
             print("Listener ready on \(String(describing: self.listener?.port))")
             self.delegate?.ListenerReady()
         case .failed(let error):
             print("Listener failed with \(error), stopping")
-            self.delegate?.displayAdvertiseError(error)
             self.delegate?.ListenerFailed()
             self.stopListening()
 //            }
@@ -150,10 +149,6 @@ extension YMLNWListener: YMLNWConnectionDelegate {
     
     func receivedMessage(content: Data?, connection: YMLNWConnection) {
         self.delegate?.receivedMessage(content: content, connection: connection)
-    }
-    
-    func displayAdvertiseError(_ error: NWError) {
-        self.delegate?.displayAdvertiseError(error)
     }
     
     func connectionError(connection: YMLNWConnection, error: NWError) {

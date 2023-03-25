@@ -176,8 +176,6 @@ class DeviceManager: ObservableObject, YMLNWListenerDelegate {
     
     searchDeviceDataHandler(data: data, endpoint: endpoint)
   }
-  
-  func displayAdvertiseError(_ error: NWError) {}
-  
+    
   func connectionError(connection: YMLNWConnection, error: NWError) {}
 }

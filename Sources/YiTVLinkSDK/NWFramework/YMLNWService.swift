@@ -122,10 +122,6 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     listener?.deliver(data: data)
   }
     
-  func displayAdvertiseError(_ error: NWError) {
-    listener?.notified(error: error)
-  }
-    
   func connectionError(connection: YMLNWConnection, error: NWError) {
     listener?.notified(error: error)
   }

@@ -13,7 +13,6 @@ class MockYMLNWConnectionDelegate: YMLNWConnectionDelegate {
   var connectionReadyWasCalled = false
   var connectionFailedWasCalled = false
   var receiveMessageContent:Data?
-  var displayAdvertiseError: NWError?
   var connectionError: NWError?
   
   var connectionReadyCallback: (() -> Void)?
@@ -29,10 +28,6 @@ class MockYMLNWConnectionDelegate: YMLNWConnectionDelegate {
   
   func receivedMessage(content: Data?, connection: YiTVLinkSDK.YMLNWConnection) {
     receiveMessageContent = content
-  }
-  
-  func displayAdvertiseError(_ error: NWError) {
-    displayAdvertiseError = error
   }
   
   func connectionError(connection: YiTVLinkSDK.YMLNWConnection, error: NWError) {

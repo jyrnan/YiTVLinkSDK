@@ -67,8 +67,6 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
   func connectionFailed(connection: YMLNWConnection) {}
     
   func receivedMessage(content: Data?, connection: YMLNWConnection) {}
-    
-  func displayAdvertiseError(_ error: NWError) {}
-    
+        
   func connectionError(connection: YMLNWConnection, error: NWError) {}
 }

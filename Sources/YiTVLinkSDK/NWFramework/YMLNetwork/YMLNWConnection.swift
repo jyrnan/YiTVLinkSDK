@@ -26,8 +26,6 @@ protocol YMLNWConnectionDelegate: AnyObject {
   func connectionReady(connection: YMLNWConnection)
   func connectionFailed(connection: YMLNWConnection)
   func receivedMessage(content: Data?, connection: YMLNWConnection)
-  //TODO: - 这个方法可能不需要，可以考虑精简掉
-  func displayAdvertiseError(_ error: NWError)
   func connectionError(connection: YMLNWConnection, error: NWError)
 }
 
