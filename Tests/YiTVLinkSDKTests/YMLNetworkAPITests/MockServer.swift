@@ -11,10 +11,12 @@ import Network
 
 class BaseMockServer: NSObject, YMLNWListenerDelegate {
   var server: YMLNWListener!
+  var port: UInt16!
   var callback: (() -> Void)?
   
   init(port: UInt16, peerType: PeerType) {
     super.init()
+    self.port = port
     self.server = YMLNWListener(on: port, delegate: self, type: peerType)
     server.startListening()
   }
@@ -38,27 +40,27 @@ class BaseMockServer: NSObject, YMLNWListenerDelegate {
   func ListenerReady() {}
   
   func ListenerFailed() {}
-  
-  // MARK: - 数据处理
-  
-  /// 返回查找设备的数据
-//  func echoFoundDeviceData() -> Data {
-//
-//      let mockDevice = DeviceInfo()
-//      mockDevice.devName = "mockDevice"
-//
-//      let mockDiscoveryInfo = DiscoveryInfo(device: mockDevice, TcpPort: tcpPort, UdpPort: udpPort)
-//      mockDiscoveryInfo.cmd = 113
-//
-//      let mockDiscoveryInfoJson = try! JSONEncoder().encode(mockDiscoveryInfo)
-//
-//      return mockDiscoveryInfoJson
-//  }
 }
 
-class ReceiveTestMockServer: BaseMockServer {
+class ReceiveMockServer: BaseMockServer {
+  var content: Data?
   override func receivedMessage(content: Data?, connection: YMLNWConnection) {
-    guard let callback = callback else { return }
-    callback()
+    self.content = content
+    callback?()
+  }
+}
+
+class EchoMockServer: BaseMockServer {
+  var echo: Data?
+  override func receivedMessage(content: Data?, connection: YMLNWConnection) {
+    guard let content = content else { return }
+    callback?()
+    
+    if let echo = echo {
+      connection.send(content: echo)
+    } else {
+      connection.send(content: content)
+    }
+    
   }
 }

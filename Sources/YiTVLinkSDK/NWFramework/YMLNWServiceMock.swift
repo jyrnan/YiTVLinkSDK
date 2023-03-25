@@ -9,86 +9,66 @@ import Foundation
 import Network
 
 class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWListenerDelegate {
-    func ListenerReady() {
-        
-    }
+  var deviceManager: DeviceManager = .init()
+  
+  var tcpClient: YiTVLinkSDK.YMLNWConnection?
+  var udpClient: YiTVLinkSDK.YMLNWConnection?
     
-    func ListenerFailed() {
-        
-    }
+  var listener: YiTVLinkSDK.YMLListener?
     
-    func connectionReady(connection: YMLNWConnection) {
-        
-    }
+  func initSDK(key: String) {}
     
-    func connectionFailed(connection: YMLNWConnection) {
-        
-    }
+  func searchDeviceInfo(searchListener: YiTVLinkSDK.YMLListener) {
+    listener = searchListener
+    let devices = [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample]
+    deviceManager.discoveredDevice = devices.map { DiscoveryInfo(device: $0, TcpPort: 0, UdpPort: 0) }
+    listener?.deliver(devices: [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample])
+  }
     
-    func receivedMessage(content: Data?, connection: YMLNWConnection) {
-        
-    }
+  func createTcpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
+    listener?.notified(with: "TCPCONNECTED")
+    return true
+  }
     
-    func displayAdvertiseError(_ error: NWError) {
-        
-    }
+  func sendTcpData(data: Data) {
+    listener?.notified(with: "Data sent: \(data)")
+  }
     
-    func connectionError(connection: YMLNWConnection, error: NWError) {
-        
-    }
+  func receiveTcpData(TCPListener: YiTVLinkSDK.YMLListener) {
+    listener = TCPListener
+  }
     
-
-    var tcpClient: YiTVLinkSDK.YMLNWConnection?
-    var udpClient: YiTVLinkSDK.YMLNWConnection?
-    lazy var searchUdpClient: YMLNWConnection! = YMLNWConnection(endpoint: NWEndpoint.hostPort(host: .init("127.0.0.1"),
-                                                                                              port: .init(rawValue:8889)!),
-                                                                delegate: self)
-    lazy var udpListener: YMLNWListener! = .init(on: 6044, delegate: self)
-    var listener: YiTVLinkSDK.YMLListener?
+  func closeTcpChannel() {
+    tcpClient = nil
+    listener?.notified(with: "TCPDISCONNECTED")
+  }
     
-    var discoveredDevice: [YiTVLinkSDK.DiscoveryInfo] = []
-    var hasConnectedToDevice: YiTVLinkSDK.DeviceInfo?
+  func createUdpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
+    return true
+  }
     
-    func initSDK(key: String) {}
+  func sendGeneralCommand(command: RemoteControl) -> Bool {
+    listener?.notified(with: "Genneral command sent: \(command)")
+    return true
+  }
     
-    func searchDeviceInfo(searchListener: YiTVLinkSDK.YMLListener) {
-        listener = searchListener
-        guard discoveredDevice.isEmpty else { return }
-        let devices = [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample]
-        discoveredDevice = devices.map { DiscoveryInfo(device: $0, TcpPort: 0, UdpPort: 0) }
-        listener?.deliver(devices: [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample])
-    }
+  func modifyDeviceName(name: String) {}
     
-    func createTcpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
-        listener?.notified(with: "TCPCONNECTED")
-        return true
-    }
+  private func echo(data: Data) {
+    listener?.deliver(data: data)
+  }
+  
+  func ListenerReady() {}
     
-    func sendTcpData(data: Data) {
-        listener?.notified(with: "Data sent: \(data)")
-    }
+  func ListenerFailed() {}
     
-    func receiveTcpData(TCPListener: YiTVLinkSDK.YMLListener) {
-        listener = TCPListener
-    }
+  func connectionReady(connection: YMLNWConnection) {}
     
-    func closeTcpChannel() {
-        tcpClient = nil
-        listener?.notified(with: "TCPDISCONNECTED")
-    }
+  func connectionFailed(connection: YMLNWConnection) {}
     
-    func createUdpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
-        return true
-    }
+  func receivedMessage(content: Data?, connection: YMLNWConnection) {}
     
-    func sendGeneralCommand(command: RemoteControl) -> Bool {
-        listener?.notified(with: "Genneral command sent: \(command)")
-        return true
-    }
+  func displayAdvertiseError(_ error: NWError) {}
     
-    func modifyDeviceName(name: String) {}
-    
-    private func echo(data: Data) {
-        listener?.deliver(data: data)
-    }
+  func connectionError(connection: YMLNWConnection, error: NWError) {}
 }

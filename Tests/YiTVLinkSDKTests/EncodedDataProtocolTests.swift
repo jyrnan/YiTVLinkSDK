@@ -85,7 +85,7 @@ final class EncodedDataProtocolTests: XCTestCase {
   }
   
   func testDeviceDiscoverPacketEncodedData() {
-    let deviceDiscoverPacket = DeviceDiscoverPacket(dev_name: "My iPhone")
+    let deviceDiscoverPacket = DeviceDiscoveryPacket(dev_name: "My iPhone")
     let encodedData = [UInt8](deviceDiscoverPacket.encodedData)
     
     let shouldData:[UInt8] = [0, 17, 0, 112, 0, 0, 0, 0, 0, 8, 1, 1, 77, 121, 32, 105, 80, 104, 111, 110, 101]

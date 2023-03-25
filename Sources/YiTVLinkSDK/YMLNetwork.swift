@@ -43,7 +43,6 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     // MARK: - Initializers
 
   override init() {
-    
   }
     
     // MARK: - APIs
@@ -85,6 +84,3 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     }
 }
 
-extension YMLNetwork {
-    
-}

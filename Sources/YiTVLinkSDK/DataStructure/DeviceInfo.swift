@@ -40,7 +40,7 @@ public class DeviceInfo: NSObject, Codable {
     }
     
     static var localMockServer: DeviceInfo {
-        var device: DeviceInfo = .init()
+      let device: DeviceInfo = .init()
         device.devName = "localMockServer"
         return device
     }

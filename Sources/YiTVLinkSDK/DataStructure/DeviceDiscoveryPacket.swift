@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DeviceDiscoverPacket: EncodedDatableProtocol {
+struct DeviceDiscoveryPacket: EncodedDatableProtocol {
   
   enum Platform: UInt16, UInt16RawValue {
     case TV = 0x02ff
