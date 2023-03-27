@@ -36,22 +36,22 @@ final class EncodedDataProtocolTests: XCTestCase {
   func testMakeEncodedDataWithEnumProperty() {
     
     struct A: EncodedDatableProtocol {
-      enum MouseEvent: UInt8, UInt8RawValue {
-        case move = 0x01
-        case leftButtonPress = 0x03
-        case leftButtonRelease = 0x04
+      enum MouseEvent: UInt8, OneByteRawValue {
+        case move               = 0x01
+        case leftButtonPress    = 0x03
+        case leftButtonRelease  = 0x04
       }
-      enum Platform: UInt16, RawRepresentable, UInt16RawValue {
-        case mStar = 0x0811;
+      enum Platform: UInt16, RawRepresentable, TwoBytesRawValue {
+        case mStar  = 0x0811;
         case mLogic = 0x0211
       }
       
-      enum PlayState:UInt32, RawRepresentable, UInt32RawValue {
-        case error = 0x00000000
-        case play = 0x00000001
-        case stop = 0x00000002
-        case pause = 0x00000003
-        case seek = 0x00000004
+      enum PlayState:UInt32, RawRepresentable, FourBytesRawValue {
+        case error  = 0x00000000
+        case play   = 0x00000001
+        case stop   = 0x00000002
+        case pause  = 0x00000003
+        case seek   = 0x00000004
       }
       var packetCmd: UInt16 = 0x0070
       var motion: MouseEvent = .leftButtonPress
