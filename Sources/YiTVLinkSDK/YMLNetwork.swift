@@ -26,23 +26,22 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     static let DEV_DISCOVERY_UDP_PORT: UInt16 = 8000
     static let DEV_TCP_PORT: UInt16 = 8001
     static let DEV_DISCOVERY_UDP_LISTEN_PORT: UInt16 = 8009
-  
-    
-    typealias SuccessHandler = (Data) -> Void
-    typealias FailureHandler = (Error?) -> Void
-    typealias StatusHandler = (YMLNetwork.Status) -> Void
 
     // MARK: - Properties
 
     // 模拟数据实例
-//    @objc public static let mock = YMLNetwork()
+    @objc public static let mock = YMLNetwork(service: YMLNWServiceMock())
     @objc public static let shared = YMLNetwork()
     
-    let service: YMLNWServiceProtocol = YMLNWService()
+    private(set) var service: YMLNWServiceProtocol = YMLNWService()
 
     // MARK: - Initializers
 
   override init() {
+  } 
+  
+  private init(service: YMLNWServiceProtocol) {
+    self.service = service
   }
     
     // MARK: - APIs

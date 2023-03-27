@@ -48,7 +48,7 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
   }
     
   func sendGeneralCommand(command: RemoteControl) -> Bool {
-    listener?.notified(with: "Genneral command sent: \(command)")
+    listener?.notified(with: "General command sent: \(command)")
     return true
   }
     

@@ -18,7 +18,8 @@ final class YMLNetworkAPITests: XCTestCase {
     // Put setup code here. This method is called before the invocation of each test method in the class.
         
     try super.setUpWithError()
-        
+    
+    //TODO: 这里不能用单例，否则会导致多次测试失败
     sut = YMLNetwork()
   }
 

@@ -42,16 +42,16 @@ extension EncodedDatableProtocol {
         data.append(stringData)
         length += stringData.count
 
-      case is any UInt8RawValue:
-        guard var cmd = (c.value as? any UInt8RawValue)?.rawValue.bigEndian else { continue }
+      case is UInt8RawValue:
+        guard var cmd = (c.value as? UInt8RawValue)?.rawValue.bigEndian else { continue }
         appendData(value: &cmd)
 
-      case is any UInt16RawValue:
-        guard var cmd = (c.value as? any UInt16RawValue)?.rawValue.bigEndian else { continue }
+      case is UInt16RawValue:
+        guard var cmd = (c.value as? UInt16RawValue)?.rawValue.bigEndian else { continue }
         appendData(value: &cmd)
 
-      case is any UInt32RawValue:
-        guard var cmd = (c.value as? any UInt32RawValue)?.rawValue.bigEndian else { continue }
+      case is UInt32RawValue:
+        guard var cmd = (c.value as? UInt32RawValue)?.rawValue.bigEndian else { continue }
         appendData(value: &cmd)
 
       default:
