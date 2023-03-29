@@ -8,14 +8,16 @@
 import Foundation
 
 protocol YMLNetworkProtocol: AnyObject {
-    func initSDK(key: String)
-    func searchDeviceInfo(searchListener: YMLListener)
-    func createTcpChannel(info: DeviceInfo) -> Bool
-    func sendTcpData(data: Data)
-    func receiveTcpData(TCPListener: YMLListener)
-    func closeTcpChannel()
-    func createUdpChannel(info: DeviceInfo) -> Bool
-    func sendGeneralCommand(command: RemoteControl) -> Bool
-    func modifyDeviceName(name: String)
-}
+  func initSDK(key: String)
+  func searchDeviceInfo(searchListener: YMLListener)
 
+  func createTcpChannel(info: DeviceInfo) -> Bool
+  func sendTcpData(data: Data)
+  func receiveTcpData(TCPListener: YMLListener)
+  func closeTcpChannel()
+
+  func createUdpChannel(info: DeviceInfo) -> Bool
+  func sendGeneralCommand(command: RemoteControl) -> Bool
+
+  func modifyDeviceName(name: String)
+}

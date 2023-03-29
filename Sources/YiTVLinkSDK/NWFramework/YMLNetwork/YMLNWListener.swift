@@ -58,7 +58,7 @@ class YMLNWListener {
         } else {
             parameters = .udp
           // 这里的端口复用可以取消，可能是和创建的顺序有关？
-//          parameters.allowLocalEndpointReuse = true
+          parameters.allowLocalEndpointReuse = true
         }
         
         guard let port = NWEndpoint.Port(rawValue: port) else {return}

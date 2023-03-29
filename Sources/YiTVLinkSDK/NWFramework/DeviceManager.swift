@@ -23,8 +23,9 @@ class DeviceManager: ObservableObject, YMLNWListenerDelegate {
   weak var appListener: YMLListener?
   
   init(listener: YMLListener? = nil) {
-    setupSearchUDPConnection()
+    // 这里需要先设置监听端口，否则在iOS15系统上有相当大几率启动监听端口会提示端口占用。
     setupSearchUDPListener()
+    setupSearchUDPConnection()
     setupGroupConnection()
   }
   
