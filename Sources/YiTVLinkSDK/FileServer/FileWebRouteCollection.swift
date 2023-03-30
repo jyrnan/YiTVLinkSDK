@@ -8,6 +8,7 @@
 import Vapor
 
 struct FileWebRouteCollection: RouteCollection {
+  weak var server: FileServer?
   func boot(routes: RoutesBuilder) throws {
     routes.get(use: filesViewHandler)
     routes.get(":filename", use: downloadFileHandler)
@@ -36,8 +37,10 @@ struct FileWebRouteCollection: RouteCollection {
     guard let filename = req.parameters.get("filename") else {
       throw Abort(.badRequest)
     }
-    let fileUrl = try URL.serverRoot().appendingPathComponent(filename)
-    return req.fileio.streamFile(at: fileUrl.path)
+//    let fileURL = try URL.serverRoot().appendingPathComponent(filename)
+    guard let fileURL = server?.sharingFileURLs[filename] else {return req.redirect(to: "/")}
+    print(fileURL)
+    return req.fileio.streamFile(at: fileURL.path)
   }
 
   func deleteFileHandler(_ req: Request) throws -> Response {

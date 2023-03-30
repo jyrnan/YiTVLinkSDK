@@ -35,7 +35,10 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     
   private(set) var service: YMLNWServiceProtocol = YMLNWService()
   
-  public var fileServer = FileServer(port: 8089)
+  private(set) var fileServer = FileServer(port: 8089)
+  
+  public var isServerRunning: Bool { fileServer.isServerRunning}
+  
 
   // MARK: - Initializers
 
@@ -83,7 +86,12 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     service.modifyDeviceName(name: name)
   }
   
+  //TODO: - 考虑是不是带入Listener来实现监听？
   @objc public func prepareFileForShare(pickedURL: URL) -> String? {
-    return fileServer.prepareFileForShare(pickedURL: pickedURL)
+    return fileServer.prepareFileForShareNoCopy(pickedURL: pickedURL)
+  }
+  
+  @objc public func startFileSharing() {
+    return fileServer.start()
   }
 }

@@ -77,5 +77,25 @@ final class EncodedDataProtocolTests: XCTestCase {
     
     XCTAssertEqual(encodedData, shouldData)
   }
+  
+  func testLocalIPEncodedDataWithIPv4() {
+    let sut: LocalIP = LocalIP(ip: "0.0.0.0")
+    let encodedData = [UInt8](sut.encodedData)
+    
+    let shouldData:[UInt8] = [UInt8](repeating: 0, count: 25) + [48, 46, 48, 46, 48, 46, 48]
+    
+    XCTAssertEqual(encodedData, shouldData)
+  }
+  
+  func testPlayMediaFilePacketEncodedData() {
+    let sut: PlayMediaFilePacket = PlayMediaFilePacket(file_size: 0, have_next_flag: .no, local_ip: "0.0.0.0", file_name: "aaaa&MP")
+    let encodedData = [UInt8](sut.encodedData)
+    
+    let ipData:[UInt8] = [UInt8](repeating: 0, count: 25) + [48, 46, 48, 46, 48, 46, 48]
+    let fileNameData:[UInt8] = [97, 97, 97, 97, 38, 77, 80]
+    let shouldData:[UInt8] = [0, 47, 32, 1] + [0, 0, 0, 0, 0, 0, 0, 0] + ipData + fileNameData
+
+    XCTAssertEqual(encodedData, shouldData)
+  }
 
 }

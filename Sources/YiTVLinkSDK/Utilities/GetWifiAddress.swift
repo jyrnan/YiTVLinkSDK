@@ -8,7 +8,7 @@
 import Foundation
   /// 获取本机Wi-Fi的IP地址
   /// - Returns: IP address of WiFi interface (en0) as a String, or `nil`
-func getWiFiAddress() -> String? {
+public func getWiFiAddress() -> String? {
     var address: String?
             
     // Get list of all interfaces on the local machine:

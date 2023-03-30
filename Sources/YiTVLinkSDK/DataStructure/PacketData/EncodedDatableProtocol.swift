@@ -11,13 +11,13 @@ import Foundation
 ///  协议格式如下：
 ///   header：body数据长度（2 Bytes） + 命令字（2 Bytes）
 ///   body：各个属性的数据依次拼接
-protocol EncodedDatableProtocol {
+public protocol EncodedDatableProtocol {
   var encodedData: Data { get }
 }
 
 /// 遵循此协议的struct可以获得encodeData
-extension EncodedDatableProtocol {
-  var encodedData: Data {
+public extension EncodedDatableProtocol {
+   var encodedData: Data {
     func encodeData(from value: Any) -> Data? {
       switch value {
       /// 如果是String格式需要单独处理方法
@@ -35,6 +35,10 @@ extension EncodedDatableProtocol {
       case is FourBytesRawValue:
         guard var value = (value as? FourBytesRawValue)?.rawValue.bigEndian else { return nil }
         return Data(bytes: &value, count: MemoryLayout.size(ofValue: value))
+        
+      case is EncodedDatableProtocol:
+        guard var value = value as? EncodedDatableProtocol else {return nil}
+        return value.encodedData
 
       default:
         return nil
@@ -88,5 +92,31 @@ protocol FourBytesRawValue {
 extension UInt32: FourBytesRawValue {
   public var rawValue: UInt32 {
     return self
+  }
+}
+
+public struct LocalIP: EncodedDatableProtocol {
+  let ip:String
+  
+  public var encodedData: Data {
+    /// 协议规定IP字段为32Bytes
+    let encodedDataLength = 32
+    
+    let emptyData = Data(repeating: 0, count: encodedDataLength)
+    
+    ///返回全为0的data
+    guard let ipData = ip.data(using: .utf8), ipData.count <= 32 else {return emptyData}
+    
+    /// 如果是IPv6，也就是地址转换成Data是32位，则直接返回该data
+    guard ipData.count < 32 else {return ipData}
+    
+    /// 如果是IPv4，则在其前面补足足够的0，并返回
+    var prefixData = Data(repeating: 0, count: encodedDataLength - ipData.count)
+    prefixData.append(ipData)
+    return prefixData
+  }
+  
+  public init(ip: String) {
+    self.ip = ip
   }
 }
