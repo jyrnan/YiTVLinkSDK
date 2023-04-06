@@ -24,16 +24,9 @@ struct DeviceDiscoveryPacket: EncodedDatableProtocol {
   let service_id: UInt32        = 0x0000_0000
   let protocol_version: UInt16  = 0x0008
   let dev_type:Platform         = .mobile_iOS
-  let dev_name:String
+  let dev_name:String = ""
 }
 
-struct HeartBeat: EncodedDatableProtocol {
-  let packetCMD: UInt16         = 0x1000
-}
-
-struct EchoHeartBeat:EncodedDatableProtocol {
-  let packetCMD: UInt16         = 0x4001
-}
 
 struct AskForTVPlatformInfo: EncodedDatableProtocol {
   let packetCMD: UInt16         = 0x3003
@@ -42,4 +35,8 @@ struct AskForTVPlatformInfo: EncodedDatableProtocol {
 struct TVPlatformInfo: EncodedDatableProtocol {
   let packetCMD: UInt16         = 0x4203
   let platform: String          = "6a901"
+}
+
+func test() {
+  let device = DeviceDiscoveryPacket(from: Data())
 }

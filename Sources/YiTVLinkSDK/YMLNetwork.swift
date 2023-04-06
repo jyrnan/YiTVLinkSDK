@@ -87,7 +87,7 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
   }
   
   //TODO: - 考虑是不是带入Listener来实现监听？
-  @objc public func prepareFileForShare(pickedURL: URL) -> String? {
+  @objc public func shareFile(pickedURL: URL) -> String? {
     return fileServer.prepareFileForShareNoCopy(pickedURL: pickedURL)
   }
   

@@ -79,7 +79,7 @@ class DeviceManager: ObservableObject, YMLNWListenerDelegate {
   
   func searchDevice() {
     print("Start search device...")
-    let deviceDiscoveryData = DeviceDiscoveryPacket(dev_name: "My iPhone").encodedData
+    let deviceDiscoveryData = DeviceDiscoveryPacket().encodedData
     clearDiscoveredDevice()
 
     searchUDPConnection.send(content: deviceDiscoveryData)

@@ -13,6 +13,8 @@ import Foundation
 ///   body：各个属性的数据依次拼接
 public protocol EncodedDatableProtocol {
   var encodedData: Data { get }
+  init()
+  init(from: Data)
 }
 
 /// 遵循此协议的struct可以获得encodeData
@@ -37,7 +39,7 @@ public extension EncodedDatableProtocol {
         return Data(bytes: &value, count: MemoryLayout.size(ofValue: value))
         
       case is EncodedDatableProtocol:
-        guard var value = value as? EncodedDatableProtocol else {return nil}
+        guard let value = value as? EncodedDatableProtocol else {return nil}
         return value.encodedData
 
       default:
@@ -59,6 +61,15 @@ public extension EncodedDatableProtocol {
     return encodedData
   }
 }
+
+public extension EncodedDatableProtocol {
+  init(from: Data) {
+    self.init()
+  }
+  
+}
+
+
 
 // MARK: - 补充协议
 
@@ -96,7 +107,11 @@ extension UInt32: FourBytesRawValue {
 }
 
 public struct LocalIP: EncodedDatableProtocol {
-  let ip:String
+  public init() {
+    
+  }
+  
+  var ip:String = ""
   
   public var encodedData: Data {
     /// 协议规定IP字段为32Bytes

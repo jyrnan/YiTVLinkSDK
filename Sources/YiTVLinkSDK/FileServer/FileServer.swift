@@ -7,17 +7,13 @@
 
 import Foundation
 import Vapor
-import Leaf
 import SwiftUI
 
 public class FileServer {
   var app: Application
   public let port: Int
-  var isServerRunning: Bool = false
-
-  var rootURL: URL? {try? URL.serverRoot()}
   
-  
+  public var isServerRunning: Bool = false
   var sharingFileURLs: [String : URL] = [:]
 
   init(port: Int) {
@@ -31,9 +27,6 @@ public class FileServer {
     app.http.server.configuration.hostname = "0.0.0.0"
     app.http.server.configuration.port = port
 
-    app.views.use(.leaf)
-    app.leaf.cache.isEnabled = app.environment.isRelease
-    app.leaf.configuration.rootDirectory = Bundle.main.bundlePath
     app.routes.defaultMaxBodySize = "50MB"
     
   }
@@ -60,8 +53,10 @@ public class FileServer {
 // MARK: - 文件共享部分
 
 extension FileServer {
+  
   func prepareFileForShareNoCopy(pickedURL: URL) -> String? {
-    start() // 启动服务器
+    /// 启动服务器
+    start()
     
     let filename = pickedURL.lastPathComponent
     sharingFileURLs[filename] = pickedURL
@@ -71,11 +66,5 @@ extension FileServer {
   func makeShareUrl(filename:String) -> String? {
     guard let host = getWiFiAddress() else {return nil}
     return "http://\(host):\(port)/\(filename)"
-  }
-  
-  func notifyFileChange() {
-    DispatchQueue.main.async {
-      NotificationCenter.default.post(name: .serverFilesChanged, object: nil)
-    }
   }
 }
