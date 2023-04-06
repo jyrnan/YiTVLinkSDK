@@ -13,6 +13,7 @@ protocol ConnectionProtocol: AnyObject {
   var state: NWConnection.State { get }
   var endpoint: NWEndpoint { get }
   var stateUpdateHandler: ((_ state: NWConnection.State) -> Void)? { set get }
+  var pathUpdateHandler: ((_ newPath: NWPath) -> Void)? {set get}
   
   func send(content: Data?, contentContext: NWConnection.ContentContext, isComplete: Bool, completion: NWConnection.SendCompletion)
   func receiveMessage(completion: @escaping (_ completeContent: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void)
@@ -122,7 +123,7 @@ class YMLNWConnection {
     switch newState {
     case .ready:
       self.name = connection.endpoint.debugDescription
-      print("\(connection) established")
+//      print("\(connection) established")
       os_log("established", log: self.log)
       
       // 如果准备就绪就开始接收消息
@@ -134,7 +135,7 @@ class YMLNWConnection {
       }
           
     case .failed(let error):
-      print("\(connection) failed with \(error)")
+      print(#line, #function, "\(connection) failed with \(error)")
               
       // 因为错误调用取消方法来中断连接
       connection.cancel()
@@ -159,6 +160,9 @@ class YMLNWConnection {
       break
     }
   }
+    
+    connection.pathUpdateHandler = {newPath in
+      print(#line,#function, newPath.debugDescription)}
         
     // TODO: - 可以设置更灵活的queue
     connection.start(queue: DispatchQueue.global())
@@ -304,7 +308,6 @@ class YMLNWConnection {
   // MARK: - Heartbeat
     
   func setHeartbeat() {
-//    guard initiatedConnection, case .tcp = type else { return }
         
     heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { _ in
       self.sendHeartbeat()

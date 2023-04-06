@@ -35,7 +35,7 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
     
   private(set) var service: YMLNWServiceProtocol = YMLNWService()
   
-  private(set) var fileServer = FileServer(port: 8089)
+  lazy private(set) var fileServer = FileServer(port: 8089)
   
   public var isServerRunning: Bool { fileServer.isServerRunning}
   

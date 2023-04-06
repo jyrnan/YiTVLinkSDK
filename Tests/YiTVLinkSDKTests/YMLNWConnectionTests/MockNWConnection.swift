@@ -12,6 +12,7 @@ import Network
 class MockNWConnection: ConnectionProtocol {
   let endpoint: NWEndpoint
   var stateUpdateHandler: ((_ state: NWConnection.State) -> Void)?
+  var pathUpdateHandler: ((_ newPath: NWPath) -> Void)?
   var state: NWConnection.State = .ready
   
   var sentData: Data?

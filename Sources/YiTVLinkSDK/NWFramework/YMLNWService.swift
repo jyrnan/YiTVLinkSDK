@@ -109,8 +109,10 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     switch connection.type {
     case .tcp:
       listener?.notified(with: "TCPDISCONNECTED")
+      tcpClient = nil
     case .udp:
       listener?.notified(with: "UDPDISCONNECTED")
+      udpClient = nil
     default:
       break
     }

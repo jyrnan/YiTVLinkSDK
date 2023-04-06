@@ -12,7 +12,7 @@ final class YMLNetworkAPITests: XCTestCase {
   var sut: YMLNetwork!
   var mockServer: BaseMockServer!
   var mockListener: BaseMockListener!
-  var sentTestData: Data = DeviceDiscoveryPacket(dev_name: "My iPhone").encodedData  //"TestData".data(using: .utf8)!
+  var sentTestData: Data = DeviceDiscoveryPacket().encodedData  //"TestData".data(using: .utf8)!
     
   override func setUpWithError() throws {
     // Put setup code here. This method is called before the invocation of each test method in the class.
