@@ -22,6 +22,9 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     
   var deviceManager = DeviceManager()
   
+  /// 检测
+  var pathMonitor = YMLNWMonitor.shared
+  
   // MARK: - YMLNetworkProtocol
 
   func initSDK(key: String) {

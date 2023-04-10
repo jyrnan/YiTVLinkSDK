@@ -42,3 +42,58 @@ public func getWiFiAddress() -> String? {
     return address
   }
 
+import SystemConfiguration.CaptiveNetwork
+
+public class NetworkTool {
+
+    public static func getWIFISSID() -> String {
+        var wifiName = ""
+        let wifiInterfaces = CNCopySupportedInterfaces()
+        guard wifiInterfaces != nil else {
+            return wifiName
+        }
+
+        let interfaceArr = CFBridgingRetain(wifiInterfaces) as! [String]
+        if interfaceArr.count > 0 {
+            let interfaceName = interfaceArr[0] as CFString
+            let ussafeInterfaceData = CNCopyCurrentNetworkInfo(interfaceName)
+
+            if ussafeInterfaceData != nil {
+                let interfaceData = ussafeInterfaceData as! [String: Any]
+                wifiName = interfaceData["SSID"]! as! String
+            }
+        }
+        return wifiName
+    }
+
+}
+
+public class SSID {
+ public class func fetchNetworkInfo() -> [NetworkInfo]? {
+     if let interfaces: NSArray = CNCopySupportedInterfaces() {
+         var networkInfos = [NetworkInfo]()
+         for interface in interfaces {
+             let interfaceName = interface as! String
+             var networkInfo = NetworkInfo(interface: interfaceName,
+                                           success: false,
+                                           ssid: nil,
+                                           bssid: nil)
+             if let dict = CNCopyCurrentNetworkInfo(interfaceName as CFString) as NSDictionary? {
+                 networkInfo.success = true
+                 networkInfo.ssid = dict[kCNNetworkInfoKeySSID as String] as? String
+                 networkInfo.bssid = dict[kCNNetworkInfoKeyBSSID as String] as? String
+             }
+             networkInfos.append(networkInfo)
+         }
+         return networkInfos
+     }
+     return nil
+   }
+ }
+
+public struct NetworkInfo {
+ public var interface: String
+ public var success: Bool = false
+ public var ssid: String?
+ public var bssid: String?
+ }

@@ -162,7 +162,8 @@ class YMLNWConnection {
   }
     
     connection.pathUpdateHandler = {newPath in
-      print(#line,#function, newPath.debugDescription)}
+      print(#line,#function, newPath.debugDescription)
+    }
         
     // TODO: - 可以设置更灵活的queue
     connection.start(queue: DispatchQueue.global())

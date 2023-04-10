@@ -10,7 +10,7 @@ import Foundation
 struct DeviceDiscoveryPacket: EncodedDatableProtocol {
   
   enum Platform: UInt16, TwoBytesRawValue {
-    case TV = 0x02ff
+    case TV                 = 0x02ff
     case mobile_android     = 0x0100
     case mobile_iOS         = 0x0101
     case mobile_windows     = 0x0102
