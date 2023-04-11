@@ -16,5 +16,5 @@ protocol YMLNWServiceProtocol: YMLNetworkProtocol {
   var deviceManager: DeviceManager { get set }
 
   /// 监听设备，一般是应用调用者，提供各种回调
-  var listener: YMLListener? { get set }
+  var appListener: YMLListener? { get set }
 }

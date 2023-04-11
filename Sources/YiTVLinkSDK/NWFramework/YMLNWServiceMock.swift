@@ -14,33 +14,33 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
   var tcpClient: YiTVLinkSDK.YMLNWConnection?
   var udpClient: YiTVLinkSDK.YMLNWConnection?
     
-  var listener: YiTVLinkSDK.YMLListener?
+  var appListener: YiTVLinkSDK.YMLListener?
     
   func initSDK(key: String) {}
     
   func searchDeviceInfo(searchListener: YiTVLinkSDK.YMLListener) {
-    listener = searchListener
+    appListener = searchListener
     let devices = [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample]
     deviceManager.discoveredDevice = devices.map { DiscoveryInfo(device: $0, TcpPort: 0, UdpPort: 0) }
-    listener?.deliver(devices: [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample])
+    appListener?.deliver(devices: [DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample, DeviceInfo.sample])
   }
     
   func createTcpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
-    listener?.notified(with: "TCPCONNECTED")
+    appListener?.notified(with: "TCPCONNECTED")
     return true
   }
     
   func sendTcpData(data: Data) {
-    listener?.notified(with: "Data sent: \(data)")
+    appListener?.notified(with: "Data sent: \(data)")
   }
     
   func receiveTcpData(TCPListener: YiTVLinkSDK.YMLListener) {
-    listener = TCPListener
+    appListener = TCPListener
   }
     
   func closeTcpChannel() {
     tcpClient = nil
-    listener?.notified(with: "TCPDISCONNECTED")
+    appListener?.notified(with: "TCPDISCONNECTED")
   }
     
   func createUdpChannel(info: YiTVLinkSDK.DeviceInfo) -> Bool {
@@ -48,14 +48,14 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
   }
     
   func sendGeneralCommand(command: RemoteControl) -> Bool {
-    listener?.notified(with: "General command sent: \(command)")
+    appListener?.notified(with: "General command sent: \(command)")
     return true
   }
     
   func modifyDeviceName(name: String) {}
     
   private func echo(data: Data) {
-    listener?.deliver(data: data)
+    appListener?.deliver(data: data)
   }
   
   func ListenerReady() {}

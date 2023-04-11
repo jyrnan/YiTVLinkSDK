@@ -84,7 +84,7 @@ final class YMLNetworkAPITests: XCTestCase {
     // UDP不真正创建链接，所以无须启动本地服务器
     addLocalMockServeAsDiscoveredDevice()
     // 因为创建UPD通道没有设置listener的步骤，所以需要手动设置
-    sut.service.listener = mockListener
+    sut.service.appListener = mockListener
         
     XCTAssertTrue(sut.createUdpChannel(info: .localMockServer))
     wait(for: [expectation], timeout: 1)
@@ -98,7 +98,7 @@ final class YMLNetworkAPITests: XCTestCase {
     mockServer.callback = didSendGeneralCommand
     addLocalMockServeAsDiscoveredDevice(udpPort:mockServer.port)
     // 因为创建UPD通道没有设置listener的步骤，所以需要手动设置
-    sut.service.listener = mockListener
+    sut.service.appListener = mockListener
     
     let command = RemoteControl.sample
         

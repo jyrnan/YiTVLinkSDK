@@ -9,7 +9,8 @@ import Foundation
 import Network
 
 @available(iOS 14.0, *)
-class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWListenerDelegate {
+class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWListenerDelegate, YMLNWMonitorDelegate {
+  
   var serviceKey = "serviceKey"
     
   // MARK: - YMLNetworkProtocol
@@ -18,12 +19,18 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   var udpClient: YMLNWConnection?
   
   /// 应用提供回调
-  weak var listener: YMLListener?
+  weak var appListener: YMLListener?
     
   var deviceManager = DeviceManager()
   
-  /// 检测
-  var pathMonitor = YMLNWMonitor.shared
+  /// 检测当前Wi-Fi状态
+  var pathMonitor: YMLNWMonitor?
+  
+  // MARK: - init
+  override init() {
+    super.init()
+    pathMonitor = YMLNWMonitor(delegate: self)
+  }
   
   // MARK: - YMLNetworkProtocol
 
@@ -32,6 +39,9 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   }
     
   func searchDeviceInfo(searchListener: YMLListener) {
+    /// 需要通过这里来实现设置listener
+    appListener = searchListener
+    
     deviceManager.appListener = searchListener
     deviceManager.searchDevice()
   }
@@ -59,7 +69,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   /// 需要最先设置此方法来设置回调YMLListener
   /// - Parameter TCPListener: 回调YMLListener
   func receiveTcpData(TCPListener: YMLListener) {
-    listener = TCPListener
+    appListener = TCPListener
   }
     
   func closeTcpChannel() {
@@ -100,9 +110,9 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   func connectionReady(connection: YMLNWConnection) {
     switch connection.type {
     case .tcp:
-      listener?.notified(with: "TCPCONNECTED")
+      appListener?.notified(with: "TCPCONNECTED")
     case .udp:
-      listener?.notified(with: "UDPCONNECTED")
+      appListener?.notified(with: "UDPCONNECTED")
     default:
       break
     }
@@ -111,10 +121,10 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   func connectionFailed(connection: YMLNWConnection) {
     switch connection.type {
     case .tcp:
-      listener?.notified(with: "TCPDISCONNECTED")
+      appListener?.notified(with: "TCPDISCONNECTED")
       tcpClient = nil
     case .udp:
-      listener?.notified(with: "UDPDISCONNECTED")
+      appListener?.notified(with: "UDPDISCONNECTED")
       udpClient = nil
     default:
       break
@@ -124,11 +134,23 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   func receivedMessage(content: Data?, connection: YMLNWConnection) {
     guard let data = content else { return }
     
-    listener?.deliver(data: data)
+    appListener?.deliver(data: data)
   }
     
   func connectionError(connection: YMLNWConnection, error: NWError) {
-    listener?.notified(error: error)
+    appListener?.notified(error: error)
   }
+  
+  //MARK: - YMLNWMonitorDelegate
+  
+  func wifiStatusDidChanged(status: NWPath.Status) {
+    switch status {
+    case .satisfied:
+      appListener?.notified(with: "WIFICONNECTED")
+    default:
+      appListener?.notified(with: "WIFIDISCONNECTED")
+    }
+  }
+  
 }
 
