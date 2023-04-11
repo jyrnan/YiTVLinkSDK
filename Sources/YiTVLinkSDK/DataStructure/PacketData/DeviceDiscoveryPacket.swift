@@ -37,6 +37,3 @@ struct TVPlatformInfo: EncodedDatableProtocol {
   let platform: String          = "6a901"
 }
 
-func test() {
-  let device = DeviceDiscoveryPacket(from: Data())
-}

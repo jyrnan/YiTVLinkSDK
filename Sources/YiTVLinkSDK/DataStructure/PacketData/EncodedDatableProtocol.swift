@@ -13,8 +13,8 @@ import Foundation
 ///   body：各个属性的数据依次拼接
 public protocol EncodedDatableProtocol {
   var encodedData: Data { get }
-  init()
-  init(from: Data)
+//  init()
+//  init(from: Data)
 }
 
 /// 遵循此协议的struct可以获得encodeData
@@ -25,6 +25,11 @@ public extension EncodedDatableProtocol {
       /// 如果是String格式需要单独处理方法
       case is String:
         return (value as? String)?.data(using: .utf8)
+        
+      case is Int16:
+        guard var value = (value as? Int16)?.bigEndian else { return nil }
+        return Data(bytes: &value, count: MemoryLayout.size(ofValue: value))
+
 
       case is OneByteRawValue:
         guard var value = (value as? OneByteRawValue)?.rawValue.bigEndian else { return nil }
@@ -62,14 +67,6 @@ public extension EncodedDatableProtocol {
   }
 }
 
-public extension EncodedDatableProtocol {
-  init(from: Data) {
-    self.init()
-  }
-  
-}
-
-
 
 // MARK: - 补充协议
 
@@ -94,6 +91,8 @@ extension UInt16: TwoBytesRawValue {
     return self
   }
 }
+
+
 
 /// 利用UInt32用来提供4Bytes属性的抽象
 protocol FourBytesRawValue {

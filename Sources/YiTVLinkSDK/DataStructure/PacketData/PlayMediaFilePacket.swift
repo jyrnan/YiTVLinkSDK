@@ -24,9 +24,6 @@ struct EchoHeartBeat:EncodedDatableProtocol {
 
 // 2.8.5
 public struct PlayMediaFilePacket: EncodedDatableProtocol {
-  public init() {
-    
-  }
   
   public enum nextFlag: UInt32, FourBytesRawValue {
     case no   = 0
