@@ -20,7 +20,8 @@ final class YMLNetworkAPITests: XCTestCase {
     try super.setUpWithError()
     
     //TODO: 这里不能用单例，否则会导致多次测试失败
-    sut = YMLNetwork()
+    sut = YMLNetwork.shared
+    sut.reset()
   }
 
   override func tearDownWithError() throws {

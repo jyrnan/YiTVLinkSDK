@@ -146,9 +146,10 @@ class YMLNWConnection {
           error == NWError.posix(.ECONNABORTED)
       {
         // 符合条件的话重新创建连接
-        let connection = NWConnection(to: endPoint, using: self.parameters)
-        self.connection = connection
-        self.startConnection()
+        ///暂时设置不重连
+//        let connection = NWConnection(to: endPoint, using: self.parameters)
+//        self.connection = connection
+//        self.startConnection()
       } else if let delegate = self.delegate {
         // 通知代理连接已经断开
         delegate.connectionFailed(connection: self)
@@ -166,7 +167,7 @@ class YMLNWConnection {
     }
         
     // TODO: - 可以设置更灵活的queue
-    connection.start(queue: DispatchQueue.global())
+    connection.start(queue: DispatchQueue.main)
     
     if type == .tcp { setHeartbeat() } // 如果是TCP连接，设置心跳包
   }

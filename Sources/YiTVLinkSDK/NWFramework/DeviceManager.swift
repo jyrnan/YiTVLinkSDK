@@ -8,31 +8,40 @@
 import Foundation
 import Network
 
-class DeviceManager: ObservableObject, YMLNWListenerDelegate {
+class DeviceManager: YMLNWListenerDelegate {
   /// 发送设备搜索广播信息的UPD连接
-  var searchUDPConnection: YMLNWConnection!
+  var searchUDPConnection: YMLNWConnection?
   /// 接受设备搜索广播信息的UPD监听
-  var searchUDPListener: YMLNWListener!
+  var searchUDPListener: YMLNWListener?
   /// 接受设备搜索组播信息的监听
   var groupConnection: NWConnectionGroup!
   
   
-  @Published var discoveredDevice: [DiscoveryInfo] = []
-  @Published var hasConnectedToDevice: DeviceInfo?
+  var discoveredDevice: [DiscoveryInfo] = []
+  var hasConnectedToDevice: DeviceInfo?
   
   /// 监听设备，一般是应用调用者，提供各种回调
   weak var appListener: YMLListener?
   
   init(listener: YMLListener? = nil) {
-    // 这里需要先设置监听端口，否则在iOS15系统上有相当大几率启动监听端口会提示端口占用。
+    
+    appListener = listener
+    setup()
+  }
+  
+  // MARK: - Network client and Listener setup
+  
+  /// 设置全部监听或连接
+  private func setup() {
+    /// 这里需要先设置监听端口，否则在iOS15系统上有相当大几率启动监听端口会提示端口占用。
     setupSearchUDPListener()
     setupSearchUDPConnection()
     setupGroupConnection()
   }
   
-  // MARK: - Network client and Listener setup
-  
   private func setupSearchUDPConnection() {
+    guard searchUDPConnection == nil else {return}
+    
     let host = NWEndpoint.Host("255.255.255.255")
     let port = NWEndpoint.Port(rawValue: YMLNetwork.DEV_DISCOVERY_UDP_PORT)!
     let endpoint = NWEndpoint.hostPort(host: host, port: port)
@@ -43,6 +52,8 @@ class DeviceManager: ObservableObject, YMLNWListenerDelegate {
   }
     
   private func setupSearchUDPListener() {
+    guard searchUDPConnection == nil else {return}
+    
     let port: UInt16 = YMLNetwork.DEV_DISCOVERY_UDP_LISTEN_PORT
     let listener = YMLNWListener(on: port, delegate: self, type: .udp)
     searchUDPListener = listener
@@ -78,21 +89,18 @@ class DeviceManager: ObservableObject, YMLNWListenerDelegate {
     
   // MARK: - SearchDevice Methods
   
-  func checkNetworkAvailability() {
-    let NetworkAvailability = ListenerReady()
-  }
-  
   func searchDevice() {
     print("Start search device...")
     
     /// 先检测SearchUDPConnection是否启动，如果没有启动则先启动
-    /// 然后在connection ready的时候调用searchDevice
-    guard searchUDPConnection.connection?.state == .ready else {return setupSearchUDPConnection()}
+    /// 然后在connection ready的时候调用searchDevice？
+    guard searchUDPConnection?.connection?.state == .ready else {return setupSearchUDPConnection()}
+    guard let listener = searchUDPListener?.listener as? NWListener, listener.state == .ready else {return setupSearchUDPListener()}
+    
+    clearDiscoveredDevice()
     
     let deviceDiscoveryData = DeviceDiscoveryPacket().encodedData
-    clearDiscoveredDevice()
-
-    searchUDPConnection.send(content: deviceDiscoveryData)
+    searchUDPConnection?.send(content: deviceDiscoveryData)
     groupConnection.send(content: deviceDiscoveryData, completion: {_ in })
   }
   
@@ -172,7 +180,10 @@ class DeviceManager: ObservableObject, YMLNWListenerDelegate {
   
   func ListenerReady() {print(#line, #function, "searchUDPListener is ready")}
   
-  func ListenerFailed() {print(#line, #function, "searchUDPListener is failed")}
+  func ListenerFailed() {
+    print(#line, #function, "searchUDPListener is failed")
+    searchUDPListener = nil
+  }
   
   // MARK: - YMLNWConnectionDelegate
 
@@ -180,10 +191,13 @@ class DeviceManager: ObservableObject, YMLNWListenerDelegate {
     print(#line, #function, "searchUDPConnection is ready.")
     /// 连接建立时候调用searchDevice
     ///  但首次调用返回结果可能因为没有设置appListern无法将devece传给app
-    searchDevice()
+//    searchDevice()
   }
   
-  func connectionFailed(connection: YMLNWConnection) {print(#line, #function, "searchUDPConnection is failed")}
+  func connectionFailed(connection: YMLNWConnection) {
+    print(#line, #function, "searchUDPConnection is failed")
+    searchUDPConnection = nil
+  }
   
   // 处理收到的设备发现数据
   func receivedMessage(content: Data?, connection: YMLNWConnection) {

@@ -30,10 +30,10 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
   // MARK: - Properties
 
   // 模拟数据实例
-  @objc public static let mock = YMLNetwork(service: YMLNWServiceMock())
-  @objc public static let shared = YMLNetwork()
+//  @objc public static let mock = YMLNetwork(service: YMLNWServiceMock())
+  @objc public static let shared = YMLNetwork(service: YMLNWService())
     
-  private(set) var service: YMLNWServiceProtocol = YMLNWService()
+  private(set) var service: YMLNWServiceProtocol// = YMLNWService()
   
   lazy private(set) var fileServer = FileServer(port: 8089)
   
@@ -42,13 +42,21 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
 
   // MARK: - Initializers
 
-  override init() {}
+  private override init() {
+    self.service = YMLNWService()
+  }
   
   private init(service: YMLNWServiceProtocol) {
     self.service = service
   }
+  
+  
     
   // MARK: - APIs
+  
+  @objc public func reset() {
+    self.service = YMLNWService()
+  }
 
   @objc public func initSDK(key: String) {
     service.initSDK(key: key)
