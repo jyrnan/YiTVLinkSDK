@@ -48,7 +48,14 @@ class YMLNWConnection {
   let id: UUID = .init()
       
   // 以连接ip和端口号作为该连接的名字，连接准备就绪时会修改成ip和端口号
-  var name: String = ""
+  var name: String = "" {
+    didSet {
+      
+    }
+    willSet {
+      
+    }
+  }
     
   // 标识连接类型
   var type: PeerType = .tcp

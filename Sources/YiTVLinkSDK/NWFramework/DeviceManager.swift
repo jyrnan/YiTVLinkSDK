@@ -16,6 +16,8 @@ class DeviceManager: YMLNWListenerDelegate {
   /// 接受设备搜索组播信息的监听
   var groupConnection: NWConnectionGroup!
   
+  let randomDeviceName: String = String(UUID().uuidString.prefix(8))
+  
   
   var discoveredDevice: [DiscoveryInfo] = []
   var hasConnectedToDevice: DeviceInfo?
@@ -67,9 +69,17 @@ class DeviceManager: YMLNWListenerDelegate {
     let groupConnection = NWConnectionGroup(with: groupDescription, using: .udp)
     
     groupConnection.setReceiveHandler(rejectOversizedMessages: false, handler: { message, data, _ in
+      guard case .hostPort(host: let host, _) = message.remoteEndpoint, host.debugDescription != getWiFiAddress() else {return}
+      
       if let data = data {
-        let endpoint = message.remoteEndpoint?.debugDescription
-        self.searchDeviceDataHandler(data: data, endpoint: endpoint)
+       
+        let remoteEndpoint = message.remoteEndpoint?.debugDescription
+        let localEndpoint = message.localEndpoint?.debugDescription
+        print(#line, #function, remoteEndpoint)
+        print(#line, #function, localEndpoint)
+        print(#line, #function, getWiFiAddress())
+        
+        self.searchDeviceDataHandler(data: data, endpoint: remoteEndpoint)
       }
     })
 
@@ -99,7 +109,10 @@ class DeviceManager: YMLNWListenerDelegate {
     
     clearDiscoveredDevice()
     
-    let deviceDiscoveryData = DeviceDiscoveryPacket().encodedData
+    var deviceDiscoveryPacket = DeviceDiscoveryPacket()
+    deviceDiscoveryPacket.dev_name = randomDeviceName
+    let deviceDiscoveryData = deviceDiscoveryPacket.encodedData
+    
     searchUDPConnection?.send(content: deviceDiscoveryData)
     groupConnection.send(content: deviceDiscoveryData, completion: {_ in })
   }
@@ -140,6 +153,9 @@ class DeviceManager: YMLNWListenerDelegate {
   
   private func receiveOneDevice(info: DiscoveryInfo) {
     print("--------- Technology research UDP did receive data \(info.device.description)-----------------")
+    
+    /// 判断是否收到是本机信息，如果是则忽略
+    guard info.device.devName != randomDeviceName else {return}
         
     if !isContainsDevice(device: info.device) {
       addDiscovery(info: info)

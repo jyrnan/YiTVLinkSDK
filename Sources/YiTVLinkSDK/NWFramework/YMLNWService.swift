@@ -139,6 +139,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     
   func connectionError(connection: YMLNWConnection, error: NWError) {
     appListener?.notified(error: error)
+    connectionFailed(connection: connection)
   }
   
   //MARK: - YMLNWMonitorDelegate

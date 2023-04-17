@@ -13,6 +13,7 @@ class BaseMockServer: NSObject, YMLNWListenerDelegate {
   var server: YMLNWListener!
   var port: UInt16!
   var callback: (() -> Void)?
+  var echo: Data?
   
   init(port: UInt16, peerType: PeerType) {
     super.init()
@@ -49,7 +50,7 @@ class ReceiveMockServer: BaseMockServer {
 }
 
 class EchoMockServer: BaseMockServer {
-  var echo: Data?
+  
   override func receivedMessage(content: Data?, connection: YMLNWConnection) {
     guard let content = content else { return }
     callback?()
