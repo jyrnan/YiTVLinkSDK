@@ -15,7 +15,7 @@ class DeviceManager: YMLNWListenerDelegate {
   var searchUDPListener: YMLNWListener?
   /// 接受设备搜索组播信息的监听
   var groupConnection: NWConnectionGroup!
-  
+  /// 用来随机生成设备名称，可作为收到发现设备信息的排除依据
   let randomDeviceName: String = String(UUID().uuidString.prefix(8))
   
   
@@ -69,16 +69,10 @@ class DeviceManager: YMLNWListenerDelegate {
     let groupConnection = NWConnectionGroup(with: groupDescription, using: .udp)
     
     groupConnection.setReceiveHandler(rejectOversizedMessages: false, handler: { message, data, _ in
-      guard case .hostPort(host: let host, _) = message.remoteEndpoint, host.debugDescription != getWiFiAddress() else {return}
       
       if let data = data {
        
         let remoteEndpoint = message.remoteEndpoint?.debugDescription
-        let localEndpoint = message.localEndpoint?.debugDescription
-        print(#line, #function, remoteEndpoint)
-        print(#line, #function, localEndpoint)
-        print(#line, #function, getWiFiAddress())
-        
         self.searchDeviceDataHandler(data: data, endpoint: remoteEndpoint)
       }
     })

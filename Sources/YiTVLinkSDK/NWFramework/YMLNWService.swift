@@ -51,7 +51,8 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   /// - Returns: 连接创建是否成功
   func createTcpChannel(info: DeviceInfo) -> Bool {
     let host = NWEndpoint.Host(info.localIp)
-    guard let port = NWEndpoint.Port(rawValue: deviceManager.getTcpPort(from: info)!) else { return false }
+    //FIXME:
+    guard let number = deviceManager.getTcpPort(from: info), let port = NWEndpoint.Port(rawValue: number ) else { return false }
     let endPoint = NWEndpoint.hostPort(host: host, port: port)
     let connection = YMLNWConnection(endpoint: endPoint, delegate: self, type: .tcp)
     tcpClient = connection
