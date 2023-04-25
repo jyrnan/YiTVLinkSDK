@@ -20,11 +20,15 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   
   /// 应用提供回调
   weak var appListener: YMLListener?
-    
+  
+  /// 设备检测
   var deviceManager = DeviceManager()
   
   /// 检测当前Wi-Fi状态
   var pathMonitor: YMLNWMonitor?
+  
+  /// HTTP Server服务
+  lazy var fileServer = FileServer(port: YMLNetwork.DEV_HTTP_SERVER_PORT)
   
   // MARK: - init
   override init() {

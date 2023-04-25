@@ -17,4 +17,6 @@ protocol YMLNWServiceProtocol: YMLNetworkProtocol {
 
   /// 监听设备，一般是应用调用者，提供各种回调
   var appListener: YMLListener? { get set }
+  
+  var fileServer: FileServer {get set}
 }

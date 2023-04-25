@@ -9,54 +9,36 @@ import Foundation
 
 public class YMLNetwork: NSObject, YMLNetworkProtocol {
   // MARK: - Types
-    
-  struct Status {
-    private(set) var value: String
-    init(_ value: String) {
-      self.value = value
-    }
-
-    static let TCPConnected = Status("TCPCONNECTED")
-    static let TCPDisconnected = Status("TCPDISCONNECTED")
-    static let UDPConnected = Status("UDPCONNECTED")
-    static let UDPDisconnected = Status("UDPDISCONNECTED")
-  }
 
   // 兼容9.0协议端口通过广播进行设备发现的UDP接收端口
   static let DEV_DISCOVERY_UDP_PORT: UInt16 = 8000
   static let DEV_TCP_PORT: UInt16 = 8001
   static let DEV_DISCOVERY_UDP_LISTEN_PORT: UInt16 = 8009
+  
+  //TODO: - HTTPSERVER是否需要动态端口？
+  static let DEV_HTTP_SERVER_PORT: Int = 8089
 
   // MARK: - Properties
 
-  // 模拟数据实例
-//  @objc public static let mock = YMLNetwork(service: YMLNWServiceMock())
-  @objc public static let shared = YMLNetwork(service: YMLNWService())
+  @objc public static let shared = YMLNetwork()
     
-  private(set) var service: YMLNWServiceProtocol// = YMLNWService()
+  private(set) var service = YMLNWService()
   
-  lazy private(set) var fileServer = FileServer(port: 8089)
+  /// 标识http服务是否运行
+  public var isServerRunning: Bool { service.fileServer.isServerRunning}
   
-  public var isServerRunning: Bool { fileServer.isServerRunning}
-  
-
   // MARK: - Initializers
 
-  private override init() {
-    self.service = YMLNWService()
-  }
-  
-  private init(service: YMLNWServiceProtocol) {
-    self.service = service
-  }
-  
-  
+  private override init() {}
     
   // MARK: - APIs
   
+#if TEST
+  //用来重置服务，仅在测试环境下生效
   @objc public func reset() {
     self.service = YMLNWService()
   }
+  #endif
 
   @objc public func initSDK(key: String) {
     service.initSDK(key: key)
@@ -96,10 +78,10 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
   
   //TODO: - 考虑是不是带入Listener来实现监听？
   @objc public func shareFile(pickedURL: URL) -> String? {
-    return fileServer.prepareFileForShareNoCopy(pickedURL: pickedURL)
+    return service.fileServer.prepareFileForShareNoCopy(pickedURL: pickedURL)
   }
   
   @objc public func startFileSharing() {
-    return fileServer.start()
+    return service.fileServer.start()
   }
 }

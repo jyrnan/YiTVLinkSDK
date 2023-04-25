@@ -15,6 +15,8 @@ class YMLNWServiceMock: YMLNWServiceProtocol, YMLNWConnectionDelegate, YMLNWList
   var udpClient: YiTVLinkSDK.YMLNWConnection?
     
   var appListener: YiTVLinkSDK.YMLListener?
+  
+  var fileServer: FileServer = FileServer(port: 57887)
     
   func initSDK(key: String) {}
     
