@@ -36,6 +36,10 @@ public struct RCKeyPacket: EncodedDatableProtocol {
   public init(key: UInt16) {
     self.key = key
   }
+  
+  public init(key: Key) {
+    self.key = key.rawValue
+  }
 }
 
 // 2.7.3  一个鼠标事件命令包

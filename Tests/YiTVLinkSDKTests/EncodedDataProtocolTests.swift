@@ -98,8 +98,16 @@ final class EncodedDataProtocolTests: XCTestCase {
     XCTAssertEqual(encodedData, shouldData)
   }
   
-  func testRCKeyPacketEncodedData() {
-    let sut: RCKeyPacket = RCKeyPacket(key: RCKeyPacket.Key.keycode_blue.rawValue)
+  func testRCKeyPacketEncodedDataInitWithKey() {
+    let sut: RCKeyPacket = RCKeyPacket(key: .keycode_blue)
+    let encodedData = [UInt8](sut.encodedData)
+    
+    let shouldData: [UInt8] = [0, 2, 16, 3, 0x1, 0x91 ]
+    XCTAssertEqual(encodedData, shouldData)
+  }
+  
+  func testRCKeyPacketEncodedDataInitWithUInt() {
+    let sut: RCKeyPacket = RCKeyPacket(key: 401)
     let encodedData = [UInt8](sut.encodedData)
     
     let shouldData: [UInt8] = [0, 2, 16, 3, 0x1, 0x91 ]
