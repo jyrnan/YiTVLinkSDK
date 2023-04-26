@@ -7,6 +7,17 @@
 
 import Foundation
 
+class YMLNWServiceFactory {
+  
+  static func makeService() -> YMLNWService {
+    return YMLNWService()
+  }
+  
+  static func makeMockService() -> YMLNWService {
+    return YMLNWService()
+  }
+}
+
 public class YMLNetwork: NSObject, YMLNetworkProtocol {
   // MARK: - Types
 
@@ -20,9 +31,9 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
 
   // MARK: - Properties
 
-  @objc public static let shared = YMLNetwork()
+  @objc public static let shared = YMLNetwork(service: YMLNWServiceFactory.makeService())
     
-  private(set) var service = YMLNWService()
+  private(set) var service: YMLNWService!
   
   /// 标识http服务是否运行
   public var isServerRunning: Bool { service.fileServer.isServerRunning}
@@ -30,13 +41,17 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
   // MARK: - Initializers
 
   private override init() {}
+  private init(service: YMLNWService){
+    self.service = service
+  }
     
   // MARK: - APIs
   
 #if TEST
   //用来重置服务，仅在测试环境下生效
   @objc public func reset() {
-    self.service = YMLNWService()
+    let newService = YMLNWServiceFactory.makeService()
+    self.service = newService
   }
   #endif
 

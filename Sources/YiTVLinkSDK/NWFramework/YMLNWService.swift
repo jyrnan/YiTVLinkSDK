@@ -18,6 +18,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   var tcpClient: YMLNWConnection?
   var udpClient: YMLNWConnection?
   
+  //TODO: - 是否需要显性设置app回调监听呢？
   /// 应用提供回调
   weak var appListener: YMLListener?
   
@@ -32,6 +33,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   
   // MARK: - init
   override init() {
+    
     super.init()
     pathMonitor = YMLNWMonitor(delegate: self)
   }
@@ -79,8 +81,11 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     
   func closeTcpChannel() {
     guard let client = tcpClient else { return }
-        
-    client.cancel()
+    
+    //取消TcpConnection后将其设置成nil
+    client.cancel() {[weak self] in
+      self?.tcpClient = nil
+    }
   }
     
   func createUdpChannel(info: DeviceInfo) -> Bool {

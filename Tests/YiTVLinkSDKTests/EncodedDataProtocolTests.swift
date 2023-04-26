@@ -99,7 +99,7 @@ final class EncodedDataProtocolTests: XCTestCase {
   }
   
   func testRCKeyPacketEncodedData() {
-    let sut: RCKeyPacket = RCKeyPacket(key: .keycode_blue)
+    let sut: RCKeyPacket = RCKeyPacket(key: RCKeyPacket.Key.keycode_blue.rawValue)
     let encodedData = [UInt8](sut.encodedData)
     
     let shouldData: [UInt8] = [0, 2, 16, 3, 0x1, 0x91 ]

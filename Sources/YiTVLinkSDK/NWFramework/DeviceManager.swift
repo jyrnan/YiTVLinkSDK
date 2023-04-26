@@ -9,12 +9,14 @@ import Foundation
 import Network
 
 class DeviceManager: YMLNWListenerDelegate {
+  //MARK: - Properties For network
   /// 发送设备搜索广播信息的UPD连接
   var searchUDPConnection: YMLNWConnection?
   /// 接受设备搜索广播信息的UPD监听
   var searchUDPListener: YMLNWListener?
   /// 接受设备搜索组播信息的监听
   var groupConnection: NWConnectionGroup!
+  
   /// 用来随机生成设备名称，可作为收到发现设备信息的排除依据
   let randomDeviceName: String = String(UUID().uuidString.prefix(8))
   

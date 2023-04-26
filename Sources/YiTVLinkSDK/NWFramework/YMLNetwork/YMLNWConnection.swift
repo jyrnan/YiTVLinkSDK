@@ -110,11 +110,12 @@ class YMLNWConnection {
   }
     
   // MARK: - Start and stop
-    
-  func cancel() {
+  func cancel(cancelHandler: (() -> Void)? = nil) {
     if let connection = connection {
       connection.cancel()
       self.connection = nil
+      
+      cancelHandler?()
     }
   }
     

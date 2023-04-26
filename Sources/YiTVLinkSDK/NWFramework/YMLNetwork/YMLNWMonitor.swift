@@ -14,31 +14,24 @@ protocol YMLNWMonitorDelegate: AnyObject {
 }
 
 class YMLNWMonitor {
-//  static let shared = YMLNWMonitor()
-  
   private let queue = DispatchQueue(label: "YMLNWConnectivityMonitor")
   private let monitor: NWPathMonitor
   
   weak var delegate: YMLNWMonitorDelegate?
   
   init(delegate: YMLNWMonitorDelegate) {
-    monitor = NWPathMonitor(requiredInterfaceType: .wifi)
-    startMonitoring()
+    self.monitor = NWPathMonitor(requiredInterfaceType: .wifi)
     self.delegate = delegate
+    
+    startMonitoring()
   }
   
   func startMonitoring() {
     monitor.pathUpdateHandler = { [weak self] path in
-      guard let self else {return}
-//      path.status == .satisfied
-//      print(path.availableInterfaces)
+      guard let self else { return }
       print(#line, #function, path.debugDescription)
       
-        delegate?.wifiStatusDidChanged(status: path.status)
-      
-//          NEHotspotNetwork.fetchCurrent { info in
-//            print(info?.ssid)
-//          }
+      delegate?.wifiStatusDidChanged(status: path.status)
     }
     monitor.start(queue: queue)
   }
