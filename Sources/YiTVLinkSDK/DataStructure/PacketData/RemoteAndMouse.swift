@@ -33,6 +33,8 @@ public struct RCKeyPacket: EncodedDatableProtocol {
   let packetCMD: UInt16 = 0x1003
   let key: UInt16
   
+  ///增加一个init方法，可以实现既采用现有类型初始化
+  ///又可以采用任意类型初始化
   public init(key: UInt16) {
     self.key = key
   }

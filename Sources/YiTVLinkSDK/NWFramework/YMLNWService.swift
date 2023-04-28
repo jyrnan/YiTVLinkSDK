@@ -47,8 +47,8 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   func searchDeviceInfo(searchListener: YMLListener) {
     /// 需要通过这里来实现设置listener
     appListener = searchListener
-    
     deviceManager.appListener = searchListener
+    
     deviceManager.searchDevice()
   }
     
@@ -56,10 +56,26 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   /// - Parameter info: 要连接的设备信息
   /// - Returns: 连接创建是否成功
   func createTcpChannel(info: DeviceInfo) -> Bool {
+    
     let host = NWEndpoint.Host(info.localIp)
-    //FIXME:
     guard let number = deviceManager.getTcpPort(from: info), let port = NWEndpoint.Port(rawValue: number ) else { return false }
     let endPoint = NWEndpoint.hostPort(host: host, port: port)
+
+    
+    ///如果存在现有连接，进行处理
+    if let client = self.tcpClient {
+     
+      ///如果当前存在相同目标的链接，则直接返回true
+      if client.endPoint ==  endPoint {
+        return true
+      }
+      
+      client.cancel{
+        self.tcpClient = nil
+      }
+    }
+    
+    
     let connection = YMLNWConnection(endpoint: endPoint, delegate: self, type: .tcp)
     tcpClient = connection
 

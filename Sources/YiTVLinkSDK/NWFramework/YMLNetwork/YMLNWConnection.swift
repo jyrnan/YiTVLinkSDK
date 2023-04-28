@@ -78,6 +78,16 @@ class YMLNWConnection {
     self.endPoint = endpoint
     self.type = type
     
+    if case .tcp = type {
+      let tcpOptions = NWProtocolTCP.Options()
+      tcpOptions.enableKeepalive = true
+      tcpOptions.keepaliveIdle = 2
+      tcpOptions.keepaliveCount = 2
+      tcpOptions.keepaliveInterval = 2
+      
+      parameters = .init(tls: nil, tcp: tcpOptions)
+    }
+    
     if case .udp = type {
       parameters = .udp
     }
@@ -278,7 +288,7 @@ class YMLNWConnection {
       {
         switch packetCmd  {
         case [0x40, 0x01]: //如果是心跳包，则打印完事
-          print(#line, #function, "Received a heartBeat", willDeliverData.debugDescription)
+          print(#line, #function, "Received a heartBeat from \(connection.endpoint.debugDescription)", willDeliverData.debugDescription)
         default: //不是心跳包则传递数据
           self.delegate?.receivedMessage(content: willDeliverData, connection: self)
         }
