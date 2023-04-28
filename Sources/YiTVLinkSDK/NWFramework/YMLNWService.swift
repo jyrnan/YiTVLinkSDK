@@ -70,10 +70,11 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
         return true
       }
       
-      client.cancel{
-        self.tcpClient?.delegate = nil
-        self.tcpClient = nil
-      }
+      client.cancel()
+//      {
+//        self.tcpClient?.delegate = nil
+//        self.tcpClient = nil
+//      }
     }
     
     
@@ -99,10 +100,11 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   func closeTcpChannel() {
     guard let client = tcpClient else { return }
     
-    //取消TcpConnection后将其设置成nil
-    client.cancel() {[weak self] in
-      self?.tcpClient = nil
-    }
+    ///取消TcpConnection后将其设置成nil
+    client.cancel()
+//    {[weak self] in
+//      self?.tcpClient = nil
+//    }
   }
     
   func createUdpChannel(info: DeviceInfo) -> Bool {

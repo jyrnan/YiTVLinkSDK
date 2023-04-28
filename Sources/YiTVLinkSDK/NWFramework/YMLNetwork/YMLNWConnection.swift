@@ -244,8 +244,8 @@ class YMLNWConnection {
   func receiveByMessage() {
     guard let connection = connection else { return }
         
-    connection.receiveMessage { content, _, _, error in
-            
+    connection.receiveMessage { [weak self] content, _, _, error in
+      guard let self = self else {return}
       if let data = content, !data.isEmpty {
         print("\(connection.endpoint.debugDescription) receive \(data.count) bytes")
         self.delegate?.receivedMessage(content: content, connection: self)
@@ -267,7 +267,8 @@ class YMLNWConnection {
     guard let connection = connection else { return }
     let headerLength = 2 * MemoryLayout<UInt16>.size
     
-    connection.receive(minimumIncompleteLength: headerLength, maximumLength: headerLength) { content, context, isComplete, error in
+    connection.receive(minimumIncompleteLength: headerLength, maximumLength: headerLength) {[weak self] content, context, isComplete, error in
+      guard let self = self else {return}
       var packetLen: UInt16 = 0 //包体的长度
       var packetCmd: [UInt8] = [] // 命令字
       var willDeliverData = Data() //需要向App提交的数据
@@ -329,8 +330,8 @@ class YMLNWConnection {
     
   func setHeartbeat() {
         
-    heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { _ in
-//      self.sendHeartbeat()
+    heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { [weak self] _ in
+      self?.sendHeartbeat()
     })
         
     heartbeatTimer?.fire()
