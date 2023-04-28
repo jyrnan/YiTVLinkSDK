@@ -330,7 +330,7 @@ class YMLNWConnection {
   func setHeartbeat() {
         
     heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { _ in
-      self.sendHeartbeat()
+//      self.sendHeartbeat()
     })
         
     heartbeatTimer?.fire()

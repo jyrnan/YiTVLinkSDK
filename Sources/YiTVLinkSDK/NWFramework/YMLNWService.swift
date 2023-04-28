@@ -71,6 +71,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
       }
       
       client.cancel{
+        self.tcpClient?.delegate = nil
         self.tcpClient = nil
       }
     }
