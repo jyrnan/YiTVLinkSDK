@@ -57,10 +57,35 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   /// - Returns: 连接创建是否成功
   func createTcpChannel(info: DeviceInfo) -> Bool {
     
+    //FIXME: - 
+    ///这是一段测试代码
+    if info.localIp == "192.168.1.104", info.devName == "MockTCPServer" {
+      let host = NWEndpoint.Host(info.localIp)
+      let port = NWEndpoint.Port(rawValue: 5555 )!
+      let endPoint = NWEndpoint.hostPort(host: host, port: port)
+      
+      ///如果存在现有连接，进行处理
+      if let client = self.tcpClient {
+       
+        ///如果当前存在相同目标的链接，则直接返回true
+        if client.endPoint ==  endPoint {
+          return true
+        }
+        
+        client.cancel()
+      }
+      
+      let connection = YMLNWConnection(endpoint: endPoint, delegate: self, type: .tcp)
+      tcpClient = connection
+
+      deviceManager.hasConnectedToDevice = info
+      return tcpClient != nil
+    }
+    ///测试代码结束
+    
     let host = NWEndpoint.Host(info.localIp)
     guard let number = deviceManager.getTcpPort(from: info), let port = NWEndpoint.Port(rawValue: number ) else { return false }
     let endPoint = NWEndpoint.hostPort(host: host, port: port)
-
     
     ///如果存在现有连接，进行处理
     if let client = self.tcpClient {
@@ -71,10 +96,6 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
       }
       
       client.cancel()
-//      {
-//        self.tcpClient?.delegate = nil
-//        self.tcpClient = nil
-//      }
     }
     
     
@@ -109,7 +130,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     
   func createUdpChannel(info: DeviceInfo) -> Bool {
     let host = NWEndpoint.Host(info.localIp)
-    guard let port = NWEndpoint.Port(rawValue: deviceManager.getUdpPort(from: info)!) else { return false }
+    guard let number = deviceManager.getUdpPort(from: info), let port = NWEndpoint.Port(rawValue: number) else { return false }
     let endPoint = NWEndpoint.hostPort(host: host, port: port)
     let connection = YMLNWConnection(endpoint: endPoint, delegate: self, type: .udp)
     udpClient = connection
