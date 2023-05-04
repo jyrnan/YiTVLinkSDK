@@ -29,6 +29,8 @@ struct FileWebRouteCollection: RouteCollection {
     print(response.headers["Content-Length"])
     let length = response.headers["Content-Length"]
     response.headers.add(name: "Content-Length", value: length.first!)
+    response.headers.add(name: "Content-Encoding", value: "identity")
+    
     print(response.headers)
     return response
   }
