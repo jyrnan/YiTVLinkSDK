@@ -25,7 +25,12 @@ struct FileWebRouteCollection: RouteCollection {
     }
     guard let fileURL = server?.sharingFileURLs[filename] else {return Response(status: .notFound)}
     print(fileURL)
-    return req.fileio.streamFile(at: fileURL.path)
+    let response = req.fileio.streamFile(at: fileURL.path)
+    print(response.headers["Content-Length"])
+    let length = response.headers["Content-Length"]
+    response.headers.add(name: "Content-Length", value: length.first!)
+    print(response.headers)
+    return response
   }
 }
 
