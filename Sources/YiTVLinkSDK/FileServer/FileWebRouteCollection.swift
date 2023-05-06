@@ -26,7 +26,8 @@ struct FileWebRouteCollection: RouteCollection {
     
     /// 下载中心的下载请求头里面有这个选项，需要去除掉
     ///  否则会回复400错误，莫非Vipor不支持Range参数？
-    req.headers.remove(name: "Range")
+    if filename.hasSuffix("apk") {
+      req.headers.remove(name: "Range")}
     
     print("\nReq Decription:\n----\n",req.description, "\n----\n")
     print("\nReq headers:\n----\n", req.headers, "\n----\n")
