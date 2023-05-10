@@ -56,6 +56,14 @@ public class DeviceInfo: NSObject, Codable {
     }
 }
 
-extension DeviceInfo: Identifiable {
+extension DeviceInfo: Identifiable {}
+
+extension DeviceInfo {
+  var isOldVersion:Bool {
+    guard !sdkVersion.isEmpty else {return false}
     
+    guard sdkVersion.hasPrefix("V"), let versionCharacter = sdkVersion.prefix(2).last, let versionNumber = Int(String(versionCharacter)) else {return false}
+    
+    return (1...8).contains(versionNumber)
+  }
 }

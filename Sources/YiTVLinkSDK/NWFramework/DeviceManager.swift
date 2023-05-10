@@ -185,6 +185,8 @@ class DeviceManager: YMLNWListenerDelegate {
   }
   
   func getTcpPort(from device: DeviceInfo) -> UInt16? {
+    guard !device.isOldVersion else {return YMLNetwork.DEV_TCP_PORT}
+    
     return discoveredDevice.filter { $0.device.localIp == device.localIp }.first?.tcpPort
   }
   

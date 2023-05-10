@@ -33,7 +33,7 @@ struct FileWebRouteCollection: RouteCollection {
       req.headers.replaceOrAdd(name: "Range", value: "bytes=0-1")
     }
     
-    print("\nReq Decription:\n----\n",req.description, "\n----\n")
+    print("\nReq Description:\n----\n",req.description, "\n----\n")
     print("\nReq headers:\n----\n", req.headers, "\n----\n")
     
     /// 获取共享文件的本地路径
