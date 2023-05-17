@@ -133,7 +133,7 @@ class YMLNWConnection {
   // 该方法主要设置stateUpdateHandler用来处理NWConnection各种状态
   // 并设置NWConnection启动
   func startConnection() {
-    guard let connection = connection else { return }
+    guard let connection = connection as? NWConnection else { return }
         
     connection.stateUpdateHandler = { [weak self] newState in
     guard let self = self else { return }
@@ -181,7 +181,17 @@ class YMLNWConnection {
   }
     
     connection.pathUpdateHandler = {newPath in
-      print(#line,#function, newPath.debugDescription)
+      print(#line,#function, "\n",newPath.debugDescription, "\n", connection.debugDescription, "\n")
+    }
+    
+    connection.viabilityUpdateHandler = {[weak self] isViable in
+      guard let self = self else {return}
+      if (!isViable) {
+        print(#line, #file, #function, "Connection is unviable")
+        self.delegate?.connectionFailed(connection: self)
+      } else {
+        print(#line, #function, "Connection is viable\n", connection.debugDescription, "\n")
+      }
     }
         
     // TODO: - 可以设置更灵活的queue
@@ -211,7 +221,7 @@ class YMLNWConnection {
       if let error = error {
         self.delegate?.connectionError(connection: self, error: error)
       } else {
-        print("Send \(content.count) bytes to: \(connection.endpoint.debugDescription) ")
+        print(#line, #function, "Send \(content.count) bytes to: \n \((connection as? NWConnection).debugDescription) \n")
       }
     })
   }
@@ -224,7 +234,7 @@ class YMLNWConnection {
       if let error = error {
         self.delegate?.connectionError(connection: self, error: error)
       } else {
-        print("Send \(content.count) bytes to: \(connection.endpoint.debugDescription) ")
+        print("Send \(content.count) bytes to: \(connection.endpoint.debugDescription) \n")
       }
     })
   }
@@ -247,7 +257,7 @@ class YMLNWConnection {
     connection.receiveMessage { [weak self] content, _, _, error in
       guard let self = self else {return}
       if let data = content, !data.isEmpty {
-        print("\(connection.endpoint.debugDescription) receive \(data.count) bytes")
+        print("\(connection.endpoint.debugDescription) receive \(data.count) bytes \n")
         self.delegate?.receivedMessage(content: content, connection: self)
       }
             

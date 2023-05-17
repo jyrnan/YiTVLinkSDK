@@ -62,7 +62,7 @@ extension DeviceInfo {
   var isOldVersion:Bool {
     guard !sdkVersion.isEmpty else {return false}
     
-    guard sdkVersion.hasPrefix("V"), let versionCharacter = sdkVersion.prefix(2).last, let versionNumber = Int(String(versionCharacter)) else {return false}
+    guard let versionNumber = Int(sdkVersion) else {return false}
     
     return (1...8).contains(versionNumber)
   }

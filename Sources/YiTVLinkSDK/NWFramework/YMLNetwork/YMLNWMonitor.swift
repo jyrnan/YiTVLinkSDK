@@ -29,7 +29,7 @@ class YMLNWMonitor {
   func startMonitoring() {
     monitor.pathUpdateHandler = { [weak self] path in
       guard let self else { return }
-      print(#line, #function, path.debugDescription)
+      print(#line, #function, path.debugDescription, "\n")
       
       delegate?.wifiStatusDidChanged(status: path.status)
     }

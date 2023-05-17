@@ -7,6 +7,7 @@
 
 import Foundation
 import Network
+import UIKit
 
 class DeviceManager: YMLNWListenerDelegate {
   //MARK: - Properties For network
@@ -18,7 +19,7 @@ class DeviceManager: YMLNWListenerDelegate {
   var groupConnection: NWConnectionGroup!
   
   /// 用来随机生成设备名称，可作为收到发现设备信息的排除依据
-  let randomDeviceName: String = String(UUID().uuidString.prefix(8))
+  let randomDeviceName: String = UIDevice.current.name//String(UUID().uuidString.prefix(8))
   
   
   var discoveredDevice: [DiscoveryInfo] = []
@@ -82,9 +83,9 @@ class DeviceManager: YMLNWListenerDelegate {
     groupConnection.stateUpdateHandler = { state in
       switch state {
       case .ready:
-        print("Group Ready")
+        print(#line, "Group Ready\n")
       default:
-        print("Group Down")
+        print(#line, "Group Down\n")
       }
     }
     
@@ -131,7 +132,7 @@ class DeviceManager: YMLNWListenerDelegate {
       // 旧版处理
       let dev_name = String(data: data[12...], encoding: .utf8) ?? "Unknown"
       let ip = String(endpoint?.split(separator: ":").first ?? "Unknown")
-      let deviceInfo = DeviceInfo(devAttr: 0, name: dev_name, platform: "0", ip: ip, sdkVersion: "V\(soft_version).0.0")
+      let deviceInfo = DeviceInfo(devAttr: 0, name: dev_name, platform: "0", ip: ip, sdkVersion: "\(soft_version)")
       let discoveryInfo = DiscoveryInfo(device: deviceInfo, TcpPort: 8001, UdpPort: 8000)
       return discoveryInfo
       
@@ -148,7 +149,7 @@ class DeviceManager: YMLNWListenerDelegate {
   }
   
   private func receiveOneDevice(info: DiscoveryInfo) {
-    print("--------- Technology research UDP did receive data \(info.device.description)-----------------")
+    print("--------- Technology research UDP did receive data\n \(info.device.description)\n-----------------\n")
     
     /// 判断是否收到是本机信息，如果是则忽略
     guard info.device.devName != randomDeviceName else {return}
@@ -184,6 +185,7 @@ class DeviceManager: YMLNWListenerDelegate {
     return discoveredDevice.filter { $0.device.localIp == device.localIp }.first?.udpPort
   }
   
+  //TODO: - 对于返回端口的策略还是需要再考虑！
   func getTcpPort(from device: DeviceInfo) -> UInt16? {
     guard !device.isOldVersion else {return YMLNetwork.DEV_TCP_PORT}
     
@@ -192,24 +194,24 @@ class DeviceManager: YMLNWListenerDelegate {
   
   // MARK: - YMLNWListenerDelegate
   
-  func ListenerReady() {print(#line, #function, "searchUDPListener is ready")}
+  func ListenerReady() {print(#line, #function, "searchUDPListener is ready\n")}
   
   func ListenerFailed() {
-    print(#line, #function, "searchUDPListener is failed")
+    print(#line, #function, "searchUDPListener is failed\n")
     searchUDPListener = nil
   }
   
   // MARK: - YMLNWConnectionDelegate
 
   func connectionReady(connection: YMLNWConnection) {
-    print(#line, #function, "searchUDPConnection is ready.")
+    print(#line, #function, "searchUDPConnection is ready.\n")
     /// 连接建立时候调用searchDevice
     ///  但首次调用返回结果可能因为没有设置appListern无法将devece传给app
 //    searchDevice()
   }
   
   func connectionFailed(connection: YMLNWConnection) {
-    print(#line, #function, "searchUDPConnection is failed")
+    print(#line, #function, "searchUDPConnection is failed\n")
     searchUDPConnection = nil
   }
   

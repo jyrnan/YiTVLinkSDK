@@ -104,7 +104,7 @@ class YMLNWListener {
         case .waiting(let error):
           print("Listener is waiting with \(error)")
         case .ready:
-            print("Listener ready on \(String(describing: self.listener?.port))")
+          print(#line, "Listener ready on \(String(describing: self.listener?.port))","\n",listener.debugDescription, "\n")
             self.delegate?.ListenerReady()
         case .failed(let error):
             print("Listener failed with \(error), stopping")
