@@ -58,7 +58,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   func createTcpChannel(info: DeviceInfo) -> Bool {
     
     //FIXME: - 
-    ///这是一段测试代码
+    ///这是一段测试用代码
     if info.localIp == "192.168.1.104", info.devName == "MockTCPServer" {
       let host = NWEndpoint.Host(info.localIp)
       let port = NWEndpoint.Port(rawValue: 5555 )!
@@ -132,6 +132,18 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
     let host = NWEndpoint.Host(info.localIp)
     guard let number = deviceManager.getUdpPort(from: info), let port = NWEndpoint.Port(rawValue: number) else { return false }
     let endPoint = NWEndpoint.hostPort(host: host, port: port)
+    
+    ///如果存在现有连接，进行处理
+    if let client = self.udpClient {
+     
+      ///如果当前存在相同目标的链接，则直接返回true
+      if client.endPoint ==  endPoint {
+        return true
+      }
+      
+      client.cancel()
+    }
+    
     let connection = YMLNWConnection(endpoint: endPoint, delegate: self, type: .udp)
     udpClient = connection
        

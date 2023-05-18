@@ -186,7 +186,6 @@ class YMLNWConnection {
         guard let self = self else { return }
         if !isViable {
           print(#line, #file, #function, "Connection is unviable")
-          self.delegate?.connectionFailed(connection: self)
         } else {
           print(#line, #function, "Connection is viable\n", connection.debugDescription, "\n")
         }
