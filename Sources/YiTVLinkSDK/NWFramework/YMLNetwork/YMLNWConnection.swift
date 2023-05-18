@@ -13,7 +13,7 @@ protocol ConnectionProtocol: AnyObject {
   var state: NWConnection.State { get }
   var endpoint: NWEndpoint { get }
   var stateUpdateHandler: ((_ state: NWConnection.State) -> Void)? { set get }
-  var pathUpdateHandler: ((_ newPath: NWPath) -> Void)? {set get}
+  var pathUpdateHandler: ((_ newPath: NWPath) -> Void)? { set get }
   
   func send(content: Data?, contentContext: NWConnection.ContentContext, isComplete: Bool, completion: NWConnection.SendCompletion)
   func receiveMessage(completion: @escaping (_ completeContent: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?) -> Void)
@@ -49,12 +49,8 @@ class YMLNWConnection {
       
   // 以连接ip和端口号作为该连接的名字，连接准备就绪时会修改成ip和端口号
   var name: String = "" {
-    didSet {
-      
-    }
-    willSet {
-      
-    }
+    didSet {}
+    willSet {}
   }
     
   // 标识连接类型
@@ -120,6 +116,7 @@ class YMLNWConnection {
   }
     
   // MARK: - Start and stop
+
   func cancel(cancelHandler: (() -> Void)? = nil) {
     if let connection = connection {
       connection.cancel()
@@ -133,67 +130,69 @@ class YMLNWConnection {
   // 该方法主要设置stateUpdateHandler用来处理NWConnection各种状态
   // 并设置NWConnection启动
   func startConnection() {
-    guard let connection = connection as? NWConnection else { return }
+    guard let connection = connection else { return }
         
     connection.stateUpdateHandler = { [weak self] newState in
-    guard let self = self else { return }
+      guard let self = self else { return }
           
-    switch newState {
-    case .ready:
-      self.name = connection.endpoint.debugDescription
-//      print("\(connection) established")
-      os_log("established", log: self.log)
+      switch newState {
+      case .ready:
+        self.name = connection.endpoint.debugDescription
+        os_log("established", log: self.log)
       
-      // 如果准备就绪就开始接收消息
-      self.setReceive()
+        // 如果准备就绪就开始接收消息
+        self.setReceive()
       
-      // TODO: - 需要修改：如果是UDP则通知代理已经准备好，TCP需要在握手完成后才通知
-      if let delegate = self.delegate {
-        delegate.connectionReady(connection: self)
-      }
+        // TODO: - 需要修改：如果是UDP则通知代理已经准备好，TCP需要在握手完成后才通知
+        if let delegate = self.delegate {
+          delegate.connectionReady(connection: self)
+        }
           
-    case .failed(let error):
-      print(#line, #function, "\(connection) failed with \(error)")
+      case .failed(let error):
+        print(#line, #function, "\(connection) failed with \(error)")
               
-      // 因为错误调用取消方法来中断连接
-      connection.cancel()
+        // 因为错误调用取消方法来中断连接
+        connection.cancel()
               
-      // 依据情况决定是否重新连接,条件：如果是主动发起连接，并且错误是对方
-      if let endPoint = self.endPoint,
-          self.initiatedConnection,
-          error == NWError.posix(.ECONNABORTED)
-      {
-        // 符合条件的话重新创建连接
-        ///暂时设置不重连
+        // 依据情况决定是否重新连接,条件：如果是主动发起连接，并且错误是对方
+        if let endPoint = self.endPoint,
+           self.initiatedConnection,
+           error == NWError.posix(.ECONNABORTED)
+        {
+          // 符合条件的话重新创建连接
+          /// 暂时设置不重连
 //        let connection = NWConnection(to: endPoint, using: self.parameters)
 //        self.connection = connection
 //        self.startConnection()
-      } else if let delegate = self.delegate {
-        // 通知代理连接已经断开
-        delegate.connectionFailed(connection: self)
-        delegate.connectionError(connection: self, error: error)
-      }
-    case .cancelled:
-      self.delegate?.connectionFailed(connection: self)
-    default:
-      break
-    }
-  }
-    
-    connection.pathUpdateHandler = {newPath in
-      print(#line,#function, "\n",newPath.debugDescription, "\n", connection.debugDescription, "\n")
-    }
-    
-    connection.viabilityUpdateHandler = {[weak self] isViable in
-      guard let self = self else {return}
-      if (!isViable) {
-        print(#line, #file, #function, "Connection is unviable")
+        } else if let delegate = self.delegate {
+          // 通知代理连接已经断开
+          delegate.connectionFailed(connection: self)
+          delegate.connectionError(connection: self, error: error)
+        }
+      case .cancelled:
         self.delegate?.connectionFailed(connection: self)
-      } else {
-        print(#line, #function, "Connection is viable\n", connection.debugDescription, "\n")
+      default:
+        break
       }
     }
-        
+    
+    // TODO: - 这里可以利用新的Handler来做一些状态的监控？
+    if let connection = connection as? NWConnection {
+      connection.pathUpdateHandler = { newPath in
+        print(#line, #function, "\n", newPath.debugDescription, "\n", connection.debugDescription, "\n")
+      }
+      
+      connection.viabilityUpdateHandler = { [weak self] isViable in
+        guard let self = self else { return }
+        if !isViable {
+          print(#line, #file, #function, "Connection is unviable")
+          self.delegate?.connectionFailed(connection: self)
+        } else {
+          print(#line, #function, "Connection is viable\n", connection.debugDescription, "\n")
+        }
+      }
+    }
+    
     // TODO: - 可以设置更灵活的queue
     connection.start(queue: DispatchQueue.main)
     
@@ -204,7 +203,6 @@ class YMLNWConnection {
     
   // 设置发送消息
   func send(content: Data) {
-
     switch type {
     case .udp, .broadcast:
       sendByMessage(content: content)
@@ -255,7 +253,7 @@ class YMLNWConnection {
     guard let connection = connection else { return }
         
     connection.receiveMessage { [weak self] content, _, _, error in
-      guard let self = self else {return}
+      guard let self = self else { return }
       if let data = content, !data.isEmpty {
         print("\(connection.endpoint.debugDescription) receive \(data.count) bytes \n")
         self.delegate?.receivedMessage(content: content, connection: self)
@@ -277,30 +275,30 @@ class YMLNWConnection {
     guard let connection = connection else { return }
     let headerLength = 2 * MemoryLayout<UInt16>.size
     
-    connection.receive(minimumIncompleteLength: headerLength, maximumLength: headerLength) {[weak self] content, context, isComplete, error in
-      guard let self = self else {return}
-      var packetLen: UInt16 = 0 //包体的长度
+    connection.receive(minimumIncompleteLength: headerLength, maximumLength: headerLength) { [weak self] content, context, isComplete, error in
+      guard let self = self else { return }
+      var packetLen: UInt16 = 0 // 包体的长度
       var packetCmd: [UInt8] = [] // 命令字
-      var willDeliverData = Data() //需要向App提交的数据
+      var willDeliverData = Data() // 需要向App提交的数据
       
       // 解码获取body长度值
       if let packetHeaderData = content, !packetHeaderData.isEmpty {
         packetLen = packetHeaderData.withUnsafeBytes { ptr in ptr.bindMemory(to: UInt16.self)[0].bigEndian }
-        packetCmd.append(contentsOf:packetHeaderData[2...3]) //设置命令字
+        packetCmd.append(contentsOf: packetHeaderData[2 ... 3]) // 设置命令字
         willDeliverData.append(contentsOf: packetHeaderData) // 添加HeadData
       }
       
       if isComplete { self.cancel() }
       
-      if let error = error {self.delegate?.connectionError(connection: self, error: error)}
-      //如果没有出错，继续处理
+      if let error = error { self.delegate?.connectionError(connection: self, error: error) }
+      // 如果没有出错，继续处理
       else if packetLen == 0
       // 处理纯header的情况
       {
-        switch packetCmd  {
-        case [0x40, 0x01]: //如果是心跳包，则打印完事
+        switch packetCmd {
+        case [0x40, 0x01]: // 如果是心跳包，则打印完事
           print(#line, #function, "Received a heartBeat from \(connection.endpoint.debugDescription)", willDeliverData.debugDescription)
-        default: //不是心跳包则传递数据
+        default: // 不是心跳包则传递数据
           self.delegate?.receivedMessage(content: willDeliverData, connection: self)
         }
         self.receiveByStream() // 继续监听
@@ -311,7 +309,6 @@ class YMLNWConnection {
           { content, context, isComplete, error in
             
             if let bodyData = content, !bodyData.isEmpty {
-              
               // 这一段打印信息可以考虑去掉
               let message = String(data: bodyData, encoding: .utf8)
               let logMessage = "TCP connection did receive, data: \(bodyData as NSData) string: \(message ?? "-")  ip: \(self.name) context:\(String(describing: context?.identifier))"
@@ -335,11 +332,9 @@ class YMLNWConnection {
     }
   }
   
-    
   // MARK: - Heartbeat
     
   func setHeartbeat() {
-        
     heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true, block: { [weak self] _ in
       self?.sendHeartbeat()
     })
@@ -350,7 +345,7 @@ class YMLNWConnection {
   private func sendHeartbeat() {
     guard connection?.state == .ready else { return }
         
-    let heartBeat:Data = HeartBeat().encodedData//Data([UInt8](arrayLiteral: 0x00, 0x00, 0x10, 0x00))
+    let heartBeat: Data = HeartBeat().encodedData // Data([UInt8](arrayLiteral: 0x00, 0x00, 0x10, 0x00))
     send(content: heartBeat)
   }
 }
@@ -368,6 +363,3 @@ extension YMLNWConnection: Hashable {
 }
 
 extension NWConnection: ConnectionProtocol {}
-
-
-

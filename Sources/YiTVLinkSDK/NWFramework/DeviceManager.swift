@@ -28,6 +28,10 @@ class DeviceManager: YMLNWListenerDelegate {
   /// 监听设备，一般是应用调用者，提供各种回调
   weak var appListener: YMLListener?
   
+  
+  /// 设置是否需要在
+  private var isNeededSearchDeviceWhenReady:Bool = false
+  
   init(listener: YMLListener? = nil) {
     
     appListener = listener
@@ -83,9 +87,9 @@ class DeviceManager: YMLNWListenerDelegate {
     groupConnection.stateUpdateHandler = { state in
       switch state {
       case .ready:
-        print(#line, "Group Ready\n")
+        print(#line, #function, "Group is ready\n")
       default:
-        print(#line, "Group Down\n")
+        print(#line, #function, "Group is down\n")
       }
     }
     
@@ -96,13 +100,29 @@ class DeviceManager: YMLNWListenerDelegate {
     
   // MARK: - SearchDevice Methods
   
+  /// 依据标志位来进行再次搜索
+  private func reSearchDeviceIfNeed() {
+    guard isNeededSearchDeviceWhenReady else {return}
+    
+    isNeededSearchDeviceWhenReady = false
+    searchDevice()
+  }
+  
+  /// <#Description#>
   func searchDevice() {
     print("Start search device...")
     
     /// 先检测SearchUDPConnection是否启动，如果没有启动则先启动
-    /// 然后在connection ready的时候调用searchDevice？
-    guard searchUDPConnection?.connection?.state == .ready else {return setupSearchUDPConnection()}
-    guard let listener = searchUDPListener?.listener as? NWListener, listener.state == .ready else {return setupSearchUDPListener()}
+    /// 然后在connection ready的时候调用searchDevice
+    guard searchUDPConnection?.connection?.state == .ready else {
+      /// 设置重新搜索设备的标志位并重新设置SearchUDPConnection
+      isNeededSearchDeviceWhenReady = true
+      return setupSearchUDPConnection()}
+    
+    guard let listener = searchUDPListener?.listener as? NWListener, listener.state == .ready else {
+      /// 设置重新搜索设备的标志位并重新设置SearchUDPListener
+      isNeededSearchDeviceWhenReady = true
+      return setupSearchUDPListener()}
     
     clearDiscoveredDevice()
     
@@ -194,7 +214,10 @@ class DeviceManager: YMLNWListenerDelegate {
   
   // MARK: - YMLNWListenerDelegate
   
-  func ListenerReady() {print(#line, #function, "searchUDPListener is ready\n")}
+  func ListenerReady() {
+    print(#line, #function, "searchUDPListener is ready\n")
+    reSearchDeviceIfNeed()
+  }
   
   func ListenerFailed() {
     print(#line, #function, "searchUDPListener is failed\n")
@@ -205,9 +228,9 @@ class DeviceManager: YMLNWListenerDelegate {
 
   func connectionReady(connection: YMLNWConnection) {
     print(#line, #function, "searchUDPConnection is ready.\n")
-    /// 连接建立时候调用searchDevice
+    /// 连接建立好时候根据情况调用调用searchDevice
     ///  但首次调用返回结果可能因为没有设置appListern无法将devece传给app
-//    searchDevice()
+    reSearchDeviceIfNeed()
   }
   
   func connectionFailed(connection: YMLNWConnection) {
