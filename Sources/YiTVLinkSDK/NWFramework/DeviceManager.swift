@@ -168,18 +168,21 @@ class DeviceManager: YMLNWListenerDelegate {
     return nil
   }
   
+  
   private func receiveOneDevice(info: DiscoveryInfo) {
-    print("--------- Technology research UDP did receive data\n \(info.device.description)\n-----------------\n")
-    
-    /// 判断是否收到是本机信息，如果是则忽略
-    guard info.device.devName != randomDeviceName else {return}
-        
-    if !isContainsDevice(device: info.device) {
-      addDiscovery(info: info)
-                
-      let devices = discoveredDevice.map(\.device)
-      // TODO: - 如何更新发现设备列表？目前是有发现新的就将当前所有设备全部发送一次
-      appListener?.deliver(devices: devices)
+    DispatchQueue.main.async {[weak self] in
+      guard let self = self else {return}
+      print("--------- Technology research UDP did receive data\n \(info.device.description)\n-----------------\n")
+      /// 判断是否收到是本机信息，如果是则忽略
+      guard info.device.devName != self.randomDeviceName else {return}
+          
+      if !isContainsDevice(device: info.device) {
+        addDiscovery(info: info)
+                  
+        let devices = discoveredDevice.map(\.device)
+        // TODO: - 如何更新发现设备列表？目前是有发现新的就将当前所有设备全部发送一次
+        appListener?.deliver(devices: devices)
+      }
     }
   }
     
@@ -196,7 +199,10 @@ class DeviceManager: YMLNWListenerDelegate {
   }
     
   private func clearDiscoveredDevice() {
-    return discoveredDevice.removeAll()
+    DispatchQueue.main.async {[weak self] in
+      guard let self = self else {return}
+      return self.discoveredDevice.removeAll()
+    }
   }
   
   // MARK: - get port

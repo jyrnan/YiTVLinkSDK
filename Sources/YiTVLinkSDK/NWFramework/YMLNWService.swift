@@ -25,6 +25,7 @@ class YMLNWService: NSObject, YMLNWServiceProtocol, YMLNWConnectionDelegate, YML
   /// 设备检测
   var deviceManager = DeviceManager()
   
+  //TODO: - pathMonitor需要提供主动调用接口
   /// 检测当前Wi-Fi状态
   var pathMonitor: YMLNWMonitor?
   
