@@ -108,7 +108,7 @@ class DeviceManager: YMLNWListenerDelegate {
     searchDevice()
   }
   
-  /// <#Description#>
+  /// 
   func searchDevice() {
     print("Start search device...")
     
@@ -170,14 +170,18 @@ class DeviceManager: YMLNWListenerDelegate {
   
   
   private func receiveOneDevice(info: DiscoveryInfo) {
-    DispatchQueue.main.async {[weak self] in
+//    DispatchQueue.main.async {[weak self] in
+//      guard let self = self else {return}
+    Task.detached {@DeviceInfoManager [weak self] in
       guard let self = self else {return}
       print("--------- Technology research UDP did receive data\n \(info.device.description)\n-----------------\n")
       /// 判断是否收到是本机信息，如果是则忽略
       guard info.device.devName != self.randomDeviceName else {return}
           
       if !isContainsDevice(device: info.device) {
-        addDiscovery(info: info)
+        
+          self.addDiscovery(info: info)
+        
                   
         let devices = discoveredDevice.map(\.device)
         // TODO: - 如何更新发现设备列表？目前是有发现新的就将当前所有设备全部发送一次
@@ -191,7 +195,8 @@ class DeviceManager: YMLNWListenerDelegate {
       return device.localIp == $0.localIp && device.devName == $0.devName
     }
   }
-    
+  
+  @DeviceInfoManager
   private func addDiscovery(info: DiscoveryInfo) {
     if !isContainsDevice(device: info.device) {
       discoveredDevice.append(info)
@@ -199,10 +204,13 @@ class DeviceManager: YMLNWListenerDelegate {
   }
     
   private func clearDiscoveredDevice() {
-    DispatchQueue.main.async {[weak self] in
-      guard let self = self else {return}
+//    DispatchQueue.main.async {[weak self] in
+//      guard let self = self else {return}
+    Task.detached {@DeviceInfoManager in
       return self.discoveredDevice.removeAll()
     }
+      
+//    }
   }
   
   // MARK: - get port
@@ -253,4 +261,10 @@ class DeviceManager: YMLNWListenerDelegate {
   }
     
   func connectionError(connection: YMLNWConnection, error: NWError) {}
+}
+
+
+@globalActor
+public actor DeviceInfoManager {
+  public static var shared: DeviceInfoManager = .init()
 }
