@@ -13,7 +13,7 @@ public class FileServer {
     var app: Application?
     public let port: Int
   
-    public var isServerRunning: Bool { self.app != nil}
+    public var isServerRunning: Bool { app != nil}
     var sharingFileURLs: [String: URL] = [:]
 
     init(port: Int) {
@@ -36,15 +36,10 @@ public class FileServer {
     }
 
     public func start() {
-//      guard !self.isServerRunning else {
-//        print(#line, #function, "Server is running already.")
-//        return
-//      }
-        
-        if app != nil { 
-            app?.shutdown()
-            app = nil }
-
+      guard !self.isServerRunning else {
+        print(#line, #function, "File server is running already.")
+        return
+      }
         createApp()
         
         Task(priority: .background) {
@@ -63,6 +58,7 @@ public class FileServer {
         guard let runningApp = app else {return}
         runningApp.shutdown()
         app = nil
+        print(#line ,#function, "File server shutdown!")
     }
 }
 
