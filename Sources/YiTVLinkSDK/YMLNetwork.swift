@@ -99,4 +99,8 @@ public class YMLNetwork: NSObject, YMLNetworkProtocol {
   @objc public func startFileSharing() {
     return service.fileServer.start()
   }
+    
+    @objc public func stopFileSharing() {
+      return service.fileServer.stop()
+    }
 }
