@@ -56,9 +56,11 @@ public class FileServer {
     
     public func stop() {
         guard let runningApp = app else {return}
-        runningApp.shutdown()
-        app = nil
-        print(#line ,#function, "File server shutdown!")
+        Task.detached(priority: .background) {[weak self] in
+            runningApp.shutdown()
+            self?.app = nil
+            print(#line ,#function, "File server shutdown!")
+        }
     }
 }
 
