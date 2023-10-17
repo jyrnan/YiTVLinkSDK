@@ -13,19 +13,19 @@ public class FileServer {
     var app: Application?
     public let port: Int
   
-    public var isServerRunning: Bool { app != nil}
+    public var isServerRunning: Bool { app != nil }
     var sharingFileURLs: [String: URL] = [:]
+    
+    weak var appListener: YMLListener?
 
     init(port: Int) {
         self.port = port
-        
     }
     
     private func createApp() {
-        
         let newApp = Application(.development)
         configure(newApp)
-        self.app = newApp
+        app = newApp
     }
 
     private func configure(_ app: Application) {
@@ -36,17 +36,23 @@ public class FileServer {
     }
 
     public func start() {
-      guard !self.isServerRunning else {
-        print(#line, #function, "File server is running already.")
-        return
-      }
-        createApp()
-        
-        Task(priority: .background) {
+        Task.detached { @FileServerActor in
+            print(#line, String(cString: __dispatch_queue_get_label(nil)))
+
+            guard !self.isServerRunning else {
+                print(#line, #function, "File server is running already.")
+                self.appListener?.notified(with: YMLNotify.FILE_SERVER_STARTED.rawValue)
+                return
+            }
+            
+            self.createApp()
+            
             do {
-                try app?.register(collection: FileWebRouteCollection(server: self))
-                try app?.start()
+                try self.app?.register(collection: FileWebRouteCollection(server: self))
+                try self.app?.start()
+//                print(#line, String(cString: __dispatch_queue_get_label(nil)))
                 
+                self.appListener?.notified(with: YMLNotify.FILE_SERVER_STARTED.rawValue)
       
             } catch {
                 print(error.localizedDescription)
@@ -55,12 +61,23 @@ public class FileServer {
     }
     
     public func stop() {
-        guard let runningApp = app else {return}
-        Task.detached(priority: .background) {[weak self] in
+        Task.detached { @FileServerActor in
+            guard let runningApp = self.app else {
+                self.appListener?.notified(with: YMLNotify.FILE_SERVER_STOPPED.rawValue)
+                return
+            }
+            
             runningApp.shutdown()
-            self?.app = nil
-            print(#line ,#function, "File server shutdown!")
+            self.app = nil
+            print(#line, #function, "File server shutdown!")
+            
+            self.appListener?.notified(with: YMLNotify.FILE_SERVER_STOPPED.rawValue)
         }
+    }
+    
+    func setupListener(appListener: YMLListener) {
+        guard self.appListener == nil else { return }
+        self.appListener = appListener
     }
 }
 
@@ -69,7 +86,8 @@ public class FileServer {
 extension FileServer {
     func prepareFileForShareNoCopy(pickedURL: URL) -> String? {
         /// 启动服务器
-        start()
+//        start()
+        guard isServerRunning else { return nil }
     
         let filename = pickedURL.lastPathComponent
         sharingFileURLs[filename] = pickedURL
@@ -80,4 +98,9 @@ extension FileServer {
         guard let host = getWiFiAddress() else { return nil }
         return "http://\(host):\(port)/\(filename)"
     }
+}
+
+@globalActor
+actor FileServerActor {
+    static var shared: FileServerActor = .init()
 }

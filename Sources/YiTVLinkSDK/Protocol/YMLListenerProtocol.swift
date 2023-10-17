@@ -13,3 +13,11 @@ import Foundation
     func deliver(devices: [DeviceInfo])
     func notified(error: Error)
 }
+
+enum YMLNotify: String {
+
+    case TCPCONNECTED, TCPDISCONNECTED
+    case UDPCONNECTED, UDPDISCONNECTED
+    
+    case FILE_SERVER_STARTED, FILE_SERVER_STOPPED
+}
