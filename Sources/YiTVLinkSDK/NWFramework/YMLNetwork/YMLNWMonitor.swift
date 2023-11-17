@@ -31,7 +31,7 @@ class YMLNWMonitor {
       guard let self else { return }
       print(#line, #function, path.debugDescription, "\n")
       
-      delegate?.wifiStatusDidChanged(status: path.status)
+        self.delegate?.wifiStatusDidChanged(status: path.status)
     }
     monitor.start(queue: queue)
   }
