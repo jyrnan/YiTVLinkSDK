@@ -152,12 +152,13 @@ class DeviceManager: YMLNWListenerDelegate {
     private func parseSearchResultData(data: Data, endpoint: String?) -> DiscoveryInfo? {
         guard data.count > 12 else { return nil }
     
+        let ip = String(endpoint?.split(separator: ":").first ?? "Unknown")
+        
         let soft_version = UInt8(data[9])
         switch soft_version {
         case 1 ... 8:
             // 旧版处理
             let dev_name = String(data: data[12...], encoding: .utf8) ?? "Unknown"
-            let ip = String(endpoint?.split(separator: ":").first ?? "Unknown")
             let deviceInfo = DeviceInfo(devAttr: 0, name: dev_name, platform: "0", ip: ip, sdkVersion: "\(soft_version)")
             let discoveryInfo = DiscoveryInfo(device: deviceInfo, TcpPort: 8001, UdpPort: 8000)
             return discoveryInfo
@@ -165,8 +166,18 @@ class DeviceManager: YMLNWListenerDelegate {
         case 9:
             // 新版本处理方式
             let dev_info = data[12...]
-            guard let discoveredInfo = try? JSONDecoder().decode(DiscoveryInfo.self, from: dev_info) else { return nil }
-            return discoveredInfo
+            guard let tvDevice = try? JSONDecoder().decode(TvDevice.self, from: dev_info) else { return nil }
+            
+            let deviceInfo = DeviceInfo(devAttr: 0,
+                                        name: tvDevice.device.devName,
+                                        platform: tvDevice.device.platform,
+                                        ip: ip,
+                                        sdkVersion: "\(soft_version)")
+            deviceInfo.serialNumber = tvDevice.encodeData.serialNumber
+            let discoveryInfo = DiscoveryInfo(device: deviceInfo,
+                                              TcpPort: tvDevice.encodeData.tcpPort,
+                                              UdpPort: tvDevice.encodeData.udpPort)
+            return discoveryInfo
     
         default:
             break

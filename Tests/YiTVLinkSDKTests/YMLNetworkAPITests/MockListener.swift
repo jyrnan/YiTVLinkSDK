@@ -26,6 +26,7 @@ class BaseMockListener: YMLListener {
 
 class SearchDeviceMockListener: BaseMockListener {
   override func deliver(devices: [DeviceInfo]) {
+      print(#line, #file, #function, devices)
     callback?()
   }
 }

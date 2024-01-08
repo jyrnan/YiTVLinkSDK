@@ -63,3 +63,20 @@ class EchoMockServer: BaseMockServer {
     
   }
 }
+
+class SearchDeviceEchoMockServer: BaseMockServer {
+    lazy var client: YMLNWConnection = YMLNWConnection(endpoint: NWEndpoint.hostPort(host: "127.0.0.1", port: 8009), delegate: self, type: .udp)
+    
+    override func receivedMessage(content: Data?, connection: YMLNWConnection) {
+      guard let content = content else { return }
+      callback?()
+      
+        
+      if let echo = echo {
+        connection.send(content: echo)
+          client.send(content: echo)
+      } else {
+        connection.send(content: content)
+      }
+    }
+}

@@ -81,6 +81,32 @@ final class YMLNetworkAPITests: XCTestCase {
     wait(for: [DeliverDeviceInfoExpectation], timeout: 1)
   }
     
+    func testSearchDeviceInfoSDK9() {
+      let dataSentExpectation = XCTestExpectation(description: "发送设备查找请求")
+      let DeliverDeviceInfoExpectation = XCTestExpectation(description: "获得返回设备信息")
+          
+      let didDeliverDeviceInfo = { DeliverDeviceInfoExpectation.fulfill() }
+      //TODO: - 如何让listener收到设备信息的回调？
+      let didDataSentUdpData = { dataSentExpectation.fulfill()
+          self.sut.service.appListener?.deliver(devices: self.sut.service.deviceManager.discoveredDevice.map({ DiscoveryInfo in
+              DiscoveryInfo.device
+          }))
+      }
+          
+      mockListener = SearchDeviceMockListener(callback: didDeliverDeviceInfo)
+      mockServer = SearchDeviceEchoMockServer(port: YMLNetwork.DEV_DISCOVERY_UDP_PORT, peerType: .udp)
+      mockServer.callback = didDataSentUdpData
+      //FIXME: -
+      mockServer.echo = DeviceDiscoveryFeedbackPacketSDK9().encodedData
+     
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        self.sut.searchDeviceInfo(searchListener: self.mockListener)
+      }
+                  
+      wait(for: [dataSentExpectation], timeout: 1)
+      wait(for: [DeliverDeviceInfoExpectation], timeout: 1)
+    }
+    
   func testCreateUdpChannel() {
     let expectation = XCTestExpectation(description: "测试UDP连接成功回调")
         

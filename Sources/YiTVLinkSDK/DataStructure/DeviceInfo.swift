@@ -17,6 +17,9 @@ public class DeviceInfo: NSObject, Codable {
     @objc public var platform: String
     @objc public var localIp: String
     @objc public var sdkVersion: String
+    
+    //增加SDK9中的新属性
+    @objc public var serialNumber: String?
 
     @objc public init(devAttr: Int,
                       name: String,
@@ -66,4 +69,21 @@ extension DeviceInfo {
     
     return (1...8).contains(versionNumber)
   }
+}
+
+struct TvDevice: Codable {
+    struct Device: Codable {
+        var devName: String
+        var platform: String
+    }
+    
+    struct EncodeData: Codable {
+        var macAddress: String
+        var serialNumber: String
+        var tcpPort: UInt16
+        var udpPort: UInt16
+    }
+    
+    var device: Device
+    var encodeData: EncodeData
 }
