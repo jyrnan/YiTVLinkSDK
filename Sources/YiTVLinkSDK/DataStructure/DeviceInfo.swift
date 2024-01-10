@@ -9,7 +9,7 @@ import Foundation
 
 public class DeviceInfo: NSObject, Codable {
     override public var description: String {
-        return super.description + "\n"  + "设备信息：\n名称:\(devName)\n平台:\(platform)\n地址:\(localIp)\n版本:\(sdkVersion)"
+        return super.description + "\n"  + "设备信息：\n名称:\(devName)\n平台:\(platform)\n地址:\(localIp)\n版本:\(sdkVersion)\n序列号:\(serialNumber)"
     }
 
     @objc public var devAttr: Int
