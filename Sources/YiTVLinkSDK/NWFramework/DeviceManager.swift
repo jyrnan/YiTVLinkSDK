@@ -158,8 +158,10 @@ class DeviceManager: YMLNWListenerDelegate {
         switch soft_version {
         case 1 ... 8:
             // 旧版处理
-            let dev_name = String(data: data[12...], encoding: .utf8) ?? "Unknown"
+            let (dev_name, dev_mac) = getNameAndMac(data: data[12...])
             let deviceInfo = DeviceInfo(devAttr: 0, name: dev_name, platform: "0", ip: ip, sdkVersion: "\(soft_version)")
+            deviceInfo.macAddress = dev_mac
+            
             let discoveryInfo = DiscoveryInfo(device: deviceInfo, TcpPort: 8001, UdpPort: 8000)
             return discoveryInfo
       
@@ -173,7 +175,10 @@ class DeviceManager: YMLNWListenerDelegate {
                                         platform: tvDevice.device.platform,
                                         ip: ip,
                                         sdkVersion: "\(soft_version)")
+            
             deviceInfo.serialNumber = tvDevice.encodeData.serialNumber
+            deviceInfo.macAddress = tvDevice.encodeData.macAddress
+            
             let discoveryInfo = DiscoveryInfo(device: deviceInfo,
                                               TcpPort: tvDevice.encodeData.tcpPort,
                                               UdpPort: tvDevice.encodeData.udpPort)
@@ -183,6 +188,11 @@ class DeviceManager: YMLNWListenerDelegate {
             break
         }
         return nil
+        
+        func getNameAndMac(data: Data) -> (String, String) {
+            guard let nameAndMac = String(data: data, encoding: .utf8)?.split(separator: "&").map(String.init), nameAndMac.count == 2 else {return ("Unkonw", "Unkonw")}
+            return (nameAndMac.first!, nameAndMac.last!)
+        }
     }
     
     @DeviceInfoManagerActor

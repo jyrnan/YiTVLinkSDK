@@ -20,6 +20,7 @@ public class DeviceInfo: NSObject, Codable {
     
     //增加SDK9中的新属性
     @objc public var serialNumber: String?
+    @objc public var macAddress: String?
 
     @objc public init(devAttr: Int,
                       name: String,
@@ -71,6 +72,7 @@ extension DeviceInfo {
   }
 }
 
+/// 针对SDK9的返回数据信息创建的解析类型
 struct TvDevice: Codable {
     struct Device: Codable {
         var devName: String
