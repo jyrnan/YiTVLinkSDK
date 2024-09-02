@@ -21,6 +21,12 @@ public class DeviceInfo: NSObject, Codable {
     //增加SDK9中的新属性
     @objc public var serialNumber: String?
     @objc public var macAddress: String?
+    
+    //增加端口号属性
+    //
+    @objc public var udpPort: UInt16 = YMLNetwork.DEV_DISCOVERY_UDP_PORT
+    @objc public var tcpPort: UInt16 = YMLNetwork.DEV_TCP_PORT
+    
 
     @objc public init(devAttr: Int,
                       name: String,

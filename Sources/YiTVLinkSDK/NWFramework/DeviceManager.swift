@@ -179,6 +179,10 @@ class DeviceManager: YMLNWListenerDelegate {
             deviceInfo.serialNumber = tvDevice.encodeData.serialNumber
             deviceInfo.macAddress = tvDevice.encodeData.macAddress
             
+            /// 对deviceInfo内新增端口号写值
+            deviceInfo.udpPort = tvDevice.encodeData.udpPort
+            deviceInfo.tcpPort = tvDevice.encodeData.tcpPort
+            
             let discoveryInfo = DiscoveryInfo(device: deviceInfo,
                                               TcpPort: tvDevice.encodeData.tcpPort,
                                               UdpPort: tvDevice.encodeData.udpPort)
@@ -231,14 +235,16 @@ class DeviceManager: YMLNWListenerDelegate {
     // MARK: - get port
   
     func getUdpPort(from device: DeviceInfo) -> UInt16? {
-        return discoveredDevice.filter { $0.device.localIp == device.localIp }.first?.udpPort
+//        return discoveredDevice.filter { $0.device.localIp == device.localIp }.first?.udpPort
+        return device.udpPort // 由于在deviceInfo内直接添加了端口号，所以直接返回该值
     }
   
     // TODO: - 对于返回端口的策略还是需要再考虑！
     func getTcpPort(from device: DeviceInfo) -> UInt16? {
-        guard !device.isOldVersion else { return YMLNetwork.DEV_TCP_PORT }
-    
-        return discoveredDevice.filter { $0.device.localIp == device.localIp }.first?.tcpPort
+//        guard !device.isOldVersion else { return YMLNetwork.DEV_TCP_PORT }
+//    
+//        return discoveredDevice.filter { $0.device.localIp == device.localIp }.first?.tcpPort
+        return device.tcpPort // 由于在deviceInfo内直接添加了端口号，所以直接返回该值
     }
   
     // MARK: - YMLNWListenerDelegate
