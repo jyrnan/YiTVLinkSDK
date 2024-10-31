@@ -20,7 +20,7 @@ class DeviceManager: YMLNWListenerDelegate {
     var groupConnection: NWConnectionGroup!
   
     /// 用来随机生成设备名称，可作为收到发现设备信息的排除依据
-    let randomDeviceName: String = UIDevice.current.name // String(UUID().uuidString.prefix(8))
+    let deviceName: String = UIDevice.current.name // String(UUID().uuidString.prefix(8))
   
     var discoveredDevice: [DiscoveryInfo] = []
     var hasConnectedToDevice: DeviceInfo?
@@ -127,7 +127,7 @@ class DeviceManager: YMLNWListenerDelegate {
         Task { await clearDiscoveredDevice() }
     
         var deviceDiscoveryPacket = DeviceDiscoveryPacket()
-        deviceDiscoveryPacket.dev_name = randomDeviceName
+        deviceDiscoveryPacket.dev_name = deviceName
         let deviceDiscoveryData = deviceDiscoveryPacket.encodedData
     
         searchUDPConnection?.send(content: deviceDiscoveryData)
@@ -204,7 +204,7 @@ class DeviceManager: YMLNWListenerDelegate {
 
             print("--------- Technology research UDP did receive data\n \(info.device.description)\n-----------------\n")
             /// 判断是否收到是本机信息，如果是则忽略
-            guard info.device.devName != self.randomDeviceName else { return }
+//            guard info.device.devName != self.deviceName else { return }
           
         if !self.isContainsDevice(device: info.device) {
                 addDiscovery(info: info)
